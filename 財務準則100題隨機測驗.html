@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>財務士官高級班專業準則測驗系統</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-hover: #1d4ed8;
+            --success: #15803d;
+            --danger: #b91c1c;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: #cbd5e1;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        .container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 680px;
+            padding: 2rem;
+        }
+        h1 { font-size: 1.35rem; color: var(--primary); margin-bottom: 1.5rem; text-align: center; }
+        .setup-group { margin-bottom: 1.25rem; }
+        label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.95rem; }
+        select, input[type="number"], textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            outline: none;
+            background-color: #fff;
+            transition: border-color 0.2s;
+        }
+        select:focus, input[type="number"]:focus, textarea:focus { border-color: var(--primary); }
+        textarea { resize: vertical; min-height: 110px; font-family: inherit; }
+        .range-inputs {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .range-inputs input { width: 50%; }
+        .radio-group {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 0.5rem;
+        }
+        .radio-group label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        .btn {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .btn:hover { background-color: var(--primary-hover); }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background-color: #dbeafe;
+            color: var(--primary);
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        .question-box { font-size: 1.1rem; font-weight: 600; margin-bottom: 1.25rem; line-height: 1.6; }
+        .feedback { margin-top: 1.25rem; padding: 1rem; border-radius: 6px; }
+        .feedback.correct { background-color: #dcfce7; border: 1px solid #bbf7d0; color: var(--success); }
+        .feedback.wrong { background-color: #fee2e2; border: 1px solid #fecaca; color: var(--danger); }
+        .feedback-title { font-weight: bold; font-size: 1.05rem; margin-bottom: 0.5rem; }
+        .diff-view { background: #fff; border: 1px solid var(--border); padding: 0.75rem; border-radius: 4px; margin-top: 0.5rem; font-size: 0.95rem; line-height: 1.6; }
+        .diff-del { background-color: #fecaca; color: #991b1b; text-decoration: line-through; padding: 0 2px; }
+        .diff-ins { background-color: #fed7aa; color: #9a3412; font-weight: bold; padding: 0 2px; }
+        .stat-card { background-color: #f1f5f9; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem; text-align: center; }
+        .stat-rate { font-size: 2rem; font-weight: bold; color: var(--primary); margin: 0.5rem 0; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- 設定畫面 -->
+    <div id="view-setup">
+        <h1>專業準則背誦測驗系統</h1>
+        
+        <div class="setup-group">
+            <label for="select-range">選擇測驗範圍：</label>
+            <select id="select-range" onchange="handleRangeChange()">
+                <option value="1-25">第 01 - 25 題（共 25 題）</option>
+                <option value="26-50">第 26 - 50 題（共 25 題）</option>
+                <option value="1-50">第 01 - 50 題（共 50 題）</option>
+                <option value="51-100">第 51 - 100 題（共 50 題）</option>
+                <option value="1-100" selected>全部題庫（01 - 100 題）</option>
+                <option value="custom">自訂題號範圍...</option>
+            </select>
+            
+            <div id="custom-range-box" class="range-inputs hidden">
+                <input type="number" id="custom-start" min="1" max="100" value="1" placeholder="起始題號">
+                <span>至</span>
+                <input type="number" id="custom-end" min="1" max="100" value="100" placeholder="結束題號">
+            </div>
+        </div>
+
+        <div class="setup-group">
+            <label>出題順序：</label>
+            <div class="radio-group">
+                <label><input type="radio" name="order-mode" value="random" checked> 隨機抽題</label>
+                <label><input type="radio" name="order-mode" value="sequential"> 循序出題</label>
+            </div>
+        </div>
+
+        <div class="setup-group">
+            <label for="input-count">本次測驗題數：</label>
+            <input type="number" id="input-count" min="1" max="100" value="10">
+        </div>
+
+        <button class="btn" onclick="startQuiz()">開始測驗</button>
+    </div>
+
+    <!-- 答題畫面 -->
+    <div id="view-quiz" class="hidden">
+        <div class="status-badge" id="quiz-progress">第 1 題 / 共 10 題</div>
+        <div class="question-box" id="quiz-question"></div>
+        <textarea id="quiz-answer" placeholder="請使用「全形標點符號」輸入標準答案..."></textarea>
+        <button class="btn" id="btn-submit" onclick="submitAnswer()" style="margin-top: 1rem;">提交答案</button>
+
+        <div id="quiz-feedback" class="feedback hidden"></div>
+        <button class="btn hidden" id="btn-next" onclick="nextQuestion()" style="margin-top: 1rem;">下一題</button>
+    </div>
+
+    <!-- 結算畫面 -->
+    <div id="view-result" class="hidden">
+        <h1>測驗結算</h1>
+        <div class="stat-card">
+            <div>正確率</div>
+            <div class="stat-rate" id="res-rate">0%</div>
+            <div id="res-detail" style="color: var(--text-muted); font-size: 0.95rem;">總題數 10 題 ｜ 答對 0 題 ｜ 答錯 0 題</div>
+        </div>
+        <button class="btn" onclick="restartQuiz()">重新測驗</button>
+    </div>
+</div>
+
+<script>
+const RAW_QUESTIONS = [
+    { no: 1, q: "常備兵役軍事訓練人員之退伍旅費支給標準為何？", a: "退員戶籍地址距離單位所在地未達60公里者，報支200元，60公里以上者，報支600元。" },
+    { no: 2, q: "依據國軍各級單位額定零用金作業規定，國防經費零用金每筆支出上限，額度為多少？", a: "2萬。" },
+    { no: 3, q: "財務人員製作移交清冊其造報方法？", a: "（1）先了解移交作業之相關法令與作業規定。（2）將「國軍非預算支用單位現金收支登記簿」上之現金及各項費款的部分結算清楚，並將平日所保管之現金、帳籍憑證、各類財產與法令規章等必須列入移交之事項做一整理。（3）至單位往來之代理國庫銀行，申請存款餘額證明表與國庫核帳清單。（4）按國軍現行移交作業規定及其格式，繕造移交清冊，並詳細檢查是否正確無誤。" },
+    { no: 4, q: "記帳憑證有那幾種？", a: "會計法第53條將記帳憑證分為3種：收入傳票、支出傳票及轉帳傳票。" },
+    { no: 5, q: "向國庫（代理國庫）、郵局領取空白支票後應注意事項為何？", a: "具領空白支票時，須詳細檢查帳號、支票號碼、張數及所附支票領取證，有無錯誤或遺漏，國庫機關專戶存款支票為便於管理，於票面一律加劃雙平行線及禁止背書轉讓字樣。" },
+    { no: 6, q: "單位如因任務實需訂製某品項，單價超過1萬元，是否要建立財產增加單？", a: "依財物標準分類，單位購製品項屬單價超過1萬元及使用年限達二年以上者，應建立財產增加單。" },
+    { no: 7, q: "非預算支用單位現金收支登記簿，記帳組織系圖為何？", a: "會計事項→原始憑證→記帳憑證→現金收支登記簿→現金餘額分析表。" },
+    { no: 8, q: "依據國軍代收款處理規定，收支計畫其個案金額在多少元（含）以上者，應報國防部核定？", a: "1,000萬。" },
+    { no: 9, q: "年度考績獎金核發標準為何？", a: "核發基準：依考績核定當月（1月1日）所任職務之俸給總額（薪俸、專業加給及主管職務加給）按下列標準發給：（1）績等「甲等」以上者：發給一個月俸給總額；已晉至本階最高俸級者（含志願役士兵），發給二個月俸給總額。（2）績等「乙上」者：發給半個月俸給總額；已晉至本階最高俸級者（含志願役士兵），發給一個半月俸給總額。（3）績等「乙等」以下者：不核發考績獎金。" },
+    { no: 10, q: "本島各機關學校憑證自總決算公布日起，保存幾年？會計月報表自總決算公布日起，保存幾年？", a: "（1）憑證：2年。（2）會計月報表：3年。" },
+    { no: 11, q: "依據軍費預算執行及支付結報規定第6條，預算支用區分為哪幾種方式？", a: "（1）一般簽證支用。（2）定額簽證支用。（3）委託簽證支用。（4）零用金簽證支用。" },
+    { no: 12, q: "簡述內部審核之實施方式為何？", a: "兼採書面審核與定期或不定期實地抽查，並得透過電腦輔助處理。" },
+    { no: 13, q: "依據預算法第6條，何謂歲出預算？", a: "稱歲出者，謂一個會計年度之一切支出。但不包括債務之償還。" },
+    { no: 14, q: "國軍各級單位現金會計作業規定簿記組織會計簿籍之種類為何？", a: "（1）序時簿：現金出納日記簿。（2）分類帳簿：總分類帳、明細分類帳、現金收支登記簿。" },
+    { no: 15, q: "依據本軍強化基層部隊財務管理內部控制具體作法，保險櫃應有何項保險機制？", a: "（1）鑰匙。（2）密碼鎖。" },
+    { no: 16, q: "基層單位財務業務集中優點為何？", a: "（1）減少國庫支票開立次數。（2）降低洽公次數。（3）提升預財士官編階，提高留營意願。（4）憑證集中保管、降低遺失風險。（5）人員集中編設可互為代理，良性互動教學相長。（6）連級會計月報由上級代編。" },
+    { no: 17, q: "當年度及以前年度已支出之代收款，若因故支出收回，其處理方式為何？", a: "（1）當年度者由簽證支用單位填製「更正記帳憑單」，並註明原因，送地區財務單位以支出沖回處理。（2）以前年度者需退還原委辦單位，如毋需退還原委辦單位者，應以歲入「雜項收入」解庫。" },
+    { no: 18, q: "各部隊（含外島單位）憑證自總決算公布日起，保存幾年？會計月報表自總決算公布日起，保存幾年？", a: "（1）憑證：2年。（2）報表：2年。" },
+    { no: 19, q: "依據國軍各級單位現金會計作業規定，試問暫收款之定義為何？", a: "（1）待查明。（2）領回轉發。（3）待解繳。（4）待退還。" },
+    { no: 20, q: "依國軍財務單位發放薪餉作業要點，支薪單位每月應送財務單位薪餉表冊計有幾類表單？", a: "（1）薪餉表冊。（2）人薪差異調節表。（3）追補（扣）人員申請表。（4）主副食費收（領）款收據。（5）人事命令副本。" },
+    { no: 21, q: "依預算法第10條規定，歲入、歲出預算，按其收支性質區分為哪兩類？", a: "經常門、資本門。" },
+    { no: 22, q: "保管期限內之會計檔案不慎遺失，應如何處置？", a: "依會計法第109條規定應即呈報該管上級主辦會計人員或主計機關及所在機關長官與該管審計機關，分別轉呈各該管最上級機關，非經審計機關認為其對於良善管理人應有之注意並無怠忽，且予解除責任者，應負懲戒。匿不呈報者，從重懲戒；若至公款受損害者，負賠償責任。" },
+    { no: 23, q: "依預算法第16條規定，預算區分為幾種？", a: "總預算、單位預算、單位預算之分預算、附屬單位預算、附屬單位預算之分預算。" },
+    { no: 24, q: "本島各機關學校及部隊外島單位帳籍自總決算公布日起，保存幾年？", a: "（1）本島各機關學校：5年。（2）部隊外島單位：2年6個月。" },
+    { no: 25, q: "依政府採購法第18條規定，招標方式有那幾種？", a: "公開招標、選擇性招標、限制性招標。" },
+    { no: 26, q: "依預算法第79條規定，各機關請求提出追加歲出預算提出之條件為何？", a: "（1）依法律增加業務或事業致增加經費時。（2）依法律增設新機關時。（3）所辦事業因重大事故經費超過法定預算時。（4）依有關法律應補列追加預算者。" },
+    { no: 27, q: "依預算法第5條規定，經費按其得支用期間分那幾種？", a: "歲定經費、繼續經費、法定經費。" },
+    { no: 28, q: "會計法第4條將政府會計事務依其性質區分為哪四類？", a: "普通公務、特種公務、公營事業、非常事件。" },
+    { no: 29, q: "依國軍各單位經管款項存款帳戶管制規定第3條及第4條，開立國庫機關專戶時機為何？", a: "新單位奉核定編成、駐地變更、奉撥專款。" },
+    { no: 30, q: "依國軍各級單位現金會計作業規定第32條第6項，伙食團於何種情況下須歸還副食週轉金？", a: "年度結束時歸還。" },
+    { no: 31, q: "主計部門及伙委所掌管「伙食費款收支登記表」其帳務以何方式為會計基礎辦理？", a: "（1）現金收付實現制。（2）權責發生制。" },
+    { no: 32, q: "依國防部所屬各級單位辦理國庫機關專戶存款網路銀行業務應行注意事項，各單位運用網路銀行轉帳交易至少律定哪四層以上之作業控管機制，並簽奉單位主官核定？", a: "（1）編輯（出納）。（2）審核（會計）。（3）核定（主計主管）。（4）放行（主官）。" },
+    { no: 33, q: "因應年度收領款收據採行電子化作業，試問列印份數及流程為何？", a: "電子化收據開立時列印一式兩份，並由單位出納（經管財務人員）、業務主管（主辦出納）、主辦會計（財務業務主管）及主官逐級用印後，一份交付予付款單位或繳款人，另一份由收領款單位會計人員附入會計傳票作為附件備查。" },
+    { no: 34, q: "依據國軍各級單位主計及出納人員交代作業規定，何謂出納人員？", a: "單位主辦出納人員及所屬承辦出納事務人員均屬之。" },
+    { no: 35, q: "依據預算法83條，行政院得於年度總預算外，於何情況下提出特別預算？", a: "（1）國防緊急設施或戰爭。（2）國家經濟重大變故。（3）重大災變。（4）不定期或數年一次之重大政事。" },
+    { no: 36, q: "依會計法第96條規定，簡述內部審核之範圍為何？", a: "（1）財務審核：謂計畫、預算之執行與控制之審核，包括預算審核、收支審核及會計審核。（2）財物審核：謂現金及其他財物之處理程序之審核，包括現金審核、採購及財物審核。（3）工作審核：謂計算工作負荷或工作成果每單位所費成本之審核。" },
+    { no: 37, q: "公款法用之意義？", a: "任何計畫、預算的編製、發布、分配、調整，和經費的支用、結報、帳務處理，以及規定頒訂等，都必須依據政府相關法令處理。" },
+    { no: 38, q: "人事薪給資料查核時機為何？", a: "（1）支薪單位人員異動。（2）支薪單位編制修訂。（3）每半年實施人事薪給資料查核乙次。" },
+    { no: 39, q: "依國軍各級單位額定零用金作業規定，預算支用單位零用金申領額度係按上年度同期（月份）或最近幾日內零用金支出結報案件總金額，扣除定額經費以收（領）款收據（以下簡稱領據）結報部分，乘以一定比率計算，以及時密切配合各該單位當時之任務需求，萬位以下之金額湊整進萬位處理？", a: "30日。" },
+    { no: 40, q: "團體獎金之運用範圍為何？試述之。", a: "應置重點於改善官兵福利及增進官兵權益，如個人獎金（品）、餐會、自強活動暨其他屬團體性之支出事項。" },
+    { no: 41, q: "依據政府支出憑證處理要點第17條，各機關審核支出憑證時，應由何人完成簽名？", a: "事項之主管人員及經手人、主辦會計人員或其授權代簽人、機關長官或其授權代簽人。" },
+    { no: 42, q: "依現金會計作業規定第127條，審核原始憑證時，發現何種情形應拒絕簽證？", a: "（1）未註明用途與案據者。（2）書據之數字或文字有塗改痕跡現象，而塗改處未經負責人員簽名或蓋章證明者。（3）書據上表示「金額或數量」之文字、號碼不符者。（4）應經經手人、品質驗收人、數量驗收人及保管人簽章而未經其簽名或蓋章者；或應附送品質或數量驗收之證明文件而未附送者。（5）應經單位主官或事項之主管或主辦人員之簽章而未簽章者。（6）與會計法、支出憑證處理要點或其他法令不符者。" },
+    { no: 43, q: "國軍計畫預算制度之特性？", a: "（1）著重遠程規劃。（2）考量整體發展。（3）實施整合評估。（4）確立計畫結構。（5）強化授權加責。（6）建立單位成本。（7）運用資訊系統。" },
+    { no: 44, q: "應備具之支出原始憑證，事實上無法取得時，應如何處置？", a: "由經辦人員填具支出證明單，書明不能取得之原因，陳經主管人員轉呈單位主官或其授權代簽人核准者，可憑以造具記帳憑證。" },
+    { no: 45, q: "試述櫃存現金上限由何人訂定？應如何訂定？", a: "單位主官；由單位主官依現金安全考量及實際任務需要適宜核定，並應經常檢討調整及檢查，以維現金安全。" },
+    { no: 46, q: "政府支出憑證處理要點第5條規定，各機關支付款項所取得之統一發票（含電子發票證明聯）或依加值型及非加值型營業稅法規定掣發之普通收據，應記明事項為何？", a: "（1）營業人之名稱及其統一編號。（2）品名及總價。僅列代號者，應由經手人加註或擇要譯註品名。（3）開立日期。（4）機關名稱或統一編號。" },
+    { no: 47, q: "試述定額經費之支用規定？", a: "行政事務：因公執行單位或團體之事務及業務推展所需費用。部隊特別補助：單位主官為加強領導統御，發揮即時犒賞部屬之獎勵（含獎金、獎品）及購置慰問品等所需費用。" },
+    { no: 48, q: "依政府支出憑證處理要點規範，何謂支出憑證？試述之。", a: "為證明支付事實所取得之收據、統一發票、表單或其他可資證明書據；另支出憑證如透過網路下載列印，應由經手人簽名。" },
+    { no: 49, q: "試述廚餘處理方式？", a: "（1）尋商變賣：應與承商完成訂約，其變賣所得價款，應全數用於改善官兵伙食，不得移作他用並依「國軍各級單位現金會計作業規定」納入副食費科目登帳管理。（2）依一般廢棄物清理法規定：委託公、民營廢棄物清除、處理機構辦理回收之。" },
+    { no: 50, q: "試論述現金基礎？", a: "謂於收付現金時，認列交易及其他事項的會計基礎，在現金基礎下，只有在收取現金或支付現金時，才會認列交易與事件。" },
+    { no: 51, q: "依據政府支出憑證處理要點第4條，收據應記明事項為何？", a: "（1）受領事由。（2）實收數額。（3）機關名稱。（4）受領人之姓名或名稱、身分證明文件字號、營利事業或扣繳單位統一編號。（5）開立日期。（6）其他由各機關依其業務性質及實際需要增列之事項。" },
+    { no: 52, q: "試論應計基礎之內涵？", a: "當交易及其他事項發生時，即予認列，記載於會計紀錄中，並在相關期間於財務報表表達，而不是在收到或支付現金時才認列的會計基礎。" },
+    { no: 53, q: "軍費預算之執行及支付結報包括哪些項目？", a: "分配預算編造、預算分配、預算簽證支用、價款支付、憑證存管及預算保留作業。" },
+    { no: 54, q: "依決算法第23條，審計機關審核各機關或各基金決算，應注意哪六列事項？", a: "（1）違法失職或不當情事之有無。（2）預算數之超過或剩餘。（3）施政計畫、事業計畫或營業計畫已成與未成之程度。（4）經濟與不經濟之程度。（5）施政效能或營業效能之程度，及與同類機關或基金之比較。（6）其他有關決算事項。" },
+    { no: 55, q: "依會計法第22條，會計報告分為哪2項？", a: "（1）靜態之會計報告：表示一定日期之財務狀況。（2）動態之會計報告：表示一定期間內之財務變動經過情形。" },
+    { no: 56, q: "國軍財力指導之目的？", a: "研判本期程可獲國防財力，確定國防預算結構比例，律定各單位可資運用國防預算額度，提示政策指導，俾為兵力整建與5年施政計畫作為之基準。" },
+    { no: 57, q: "何謂主計人員？", a: "辦理單位主辦主計（會計）人員及所屬承辦主計事務人員。" },
+    { no: 58, q: "依國軍券軍款處理作業規定，收支計畫應於收到款項幾日內完成計畫編製？", a: "10個工作日。" },
+    { no: 59, q: "國軍以單位領據結報之各項經費項目為何？", a: "（1）定額行政事務費。（2）部隊特別補助費。（3）保密科目經費。" },
+    { no: 60, q: "分批付款之採購案件，須檢附哪些文件？", a: "分批（期）付款之收據或統一發票、分批（期）付款表；其訂有契約者，應於第一次付款時檢送契約副本或抄本。" },
+    { no: 61, q: "每月月底預財人員應督促伙委完成伙食帳之製作，並於次月5、10日前分別應完成何事項？", a: "5日前完成調節表製作，及每月10日前完成各項憑證及每日公布之伙食公布表、採買單等相關憑證，裝訂成冊並呈主官核閱。" },
+    { no: 62, q: "依預算法第2條，何謂概算？預算案？法定預算？", a: "（1）各主管機關依施政計畫初步估計之收支。（2）預算之未經立法程序者。（3）其經立法程序而公布者。" },
+    { no: 63, q: "依據「政府支出憑證處理要點」透過網路交易應檢附憑證為何？", a: "依規定由營業人提供或機關自行下載列印，因特殊情形不能取得者，得以獲有足資證明支付事實電子憑證作為支出憑證。" },
+    { no: 64, q: "依國軍各級單位主計及出納人員交代作業規定，經管財務人員交接事項內容包含哪些？", a: "（1）會計業務：經管之現金收支登記簿、各帳戶餘額明細資料、會計檔案、會計業務用品、會計法令規章、會計類待辦事項及其他有關會計業務應交代事項等。（2）出納業務：經管之各項現金、票據、銀行存款等及銀行存款調節表、各項原始憑證及支票、領款收據（存根）、出納業務用品、出納法令規章、出納類待辦事項及其他有關出納業務應交代事項等。" },
+    { no: 65, q: "三節加菜金為哪三節？給與為多少？", a: "春節、端節、秋節；50元。" },
+    { no: 66, q: "戰時年度預算與年度戰時預算有何差異？", a: "（1）戰時年度預算：係指戰爭發生後所編列之預算。（2）年度戰時預算：係指年度內為因應可能發生戰事所編列之預算。" },
+    { no: 67, q: "依預算法第37條規定，各機關單位預算，歲入應按何種科目編製？歲出應按何種科目編製之？", a: "（1）來源別。（2）政事別、計畫或業務別與用途別。" },
+    { no: 68, q: "依「國軍國內出差旅費報支規定」可申領旅費項目為何？並簡述之。", a: "（1）交通費：包括出差行程中必須搭乘之飛機、高鐵、船舶、火車、汽車、捷運、公共自行車等費用，均覈實報支；單位專備交通工具或出差人員領有免費票或搭乘便車者，不得報支交通費。搭乘飛機、高鐵、座（艙）位有分等之船舶、火車者，報支交通費時，應檢附票根或購票證明文件。駕駛自用汽車、機車出差者，其交通費得按必要路程之公里數（尾數不足一公里者，進位為一公里），汽車以每公里新臺幣三元、機車二元報支。（2）住宿費：出差地點距離單位所在地60公里以上，且有住宿事實者，得依報支數額表規定每日上限內（平日：3,500元；假日：4,500元），檢據覈實報支住宿費。（3）雜費：各單位依實際出差行程，達4小時以上得報支400元；未滿四小時者，雜費得報支200元；所稱實際出差行程，不含提前出發及延後返回所需路程時間。" },
+    { no: 69, q: "國防部所屬各級單位主官及副主官行政費，動支對象為何？", a: "各級部隊、機關單位指揮官、副指揮官及中校以上主官、副主官等。" },
+    { no: 70, q: "依預算法第2條，何謂分配預算？", a: "在法定預算範圍內，由各機關依法分配實施之計畫稱為分配預算。" },
+    { no: 71, q: "試舉主副食費收入項目除預撥副食費及結補副食費等2項外，尚有那5項？", a: "（1）友軍及部內各單位支援、受訓等繳交之搭伙費。（2）僅扣副食差額。（3）餘糧價繳。（4）加菜金。（5）其他（如廚餘收入等）。" },
+    { no: 72, q: "試舉主副食費支出項目5項？", a: "（1）各旬菜金。（2）止伙費。（3）炊具費。（4）副食外購。（5）瓦斯費。" },
+    { no: 73, q: "依國軍各級單位現金會計作業規定第39條，試述參加副供站採買單位其主副食費管理方式？", a: "應交由其主計部門統一保管，以貫徹統收統支，維護現金安全。" },
+    { no: 74, q: "依軍費預算執行及支付結報規定第6條第10項，採購案於經費結報時，須檢附哪些文件？", a: "檢附收據或統一發票、驗收證明文件（依政府採購主管機關規定應填具結算驗收證明書者，檢送結算驗收證明書送審）及其他足資證明之相關文件；如訂有契約者，應檢附契約副本或抄本。如無前項驗收證明文件時，應由事項之主管人員及經手人、主辦會計人員或其授權代簽人、機關長官或其授權代簽人於原始憑證黏存單內分別簽名。" },
+    { no: 75, q: "新兵訓練期間，依「國軍薪餉發放法規及案例彙編」其發放程序為何？", a: "新訓部隊於新兵入伍報到後2週內，依徵召人員名冊造具薪餉表冊及主副食費收據，送發放薪餉財務單位審核，並於1週內協調排訂日程發放薪餉。" },
+    { no: 76, q: "依國軍官兵止伙作業規定第6條，申領止伙金額如何計算？", a: "依國軍官兵主副食計價標準所列金額，按止伙天數核算，餘不列入止伙，月份有分大、小月所止伙之金額會有誤差，遇小數點以四捨五入計列。" },
+    { no: 77, q: "各單位所取據之紙本電子發票，倘顯無法長時間保存者，應如何處理？", a: "無須影印發票，亦無須於發票或申請動支經費文件內註記發票字軌號碼，日後若有查考實需可至財政部相關頁面搜尋印製。" },
+    { no: 78, q: "依軍費預算執行及支付結報規定第2條第5項，何謂甲種財務代理人？", a: "財務單位在特殊情況下，得應預算支用單位之請求，臨時指派財務官於指定地點辦理費款支付事宜者，稱為甲種財務代理人。" },
+    { no: 79, q: "依會計法第51條，何謂記帳憑證？述明之", a: "證明處理會計事項人員責任而為記帳所根據之憑證。" },
+    { no: 80, q: "試述國軍部隊至副供站採買有何限制，另駐地偏遠單位如何處置？", a: "（1）凡距副供站車程（單程）在30分鐘內之單位均應依規定向國軍副供站集中採購。（2）駐地偏遠之單位，得由上級單位視狀況研採併車分送或隔日採購方式行之。" },
+    { no: 81, q: "收款之收付保管原則為何？", a: "均應依「統收統支」原則由國防部主計局財務中心所屬地區財務單位統一辦理，其餘各單位不得自為現金收支，或截留坐支。" },
+    { no: 82, q: "依國軍官兵止伙作業規定，試述止伙費申領事由為何？", a: "（1）公假、公差。（限同一事由未申請雜費者，始得申請）。（2）慰勞假、榮譽假。（3）婚假。（4）產（檢）假及陪產（檢）假。（5）流產假。（6）喪假。（7）事假、病假及生理假。（8）調職。（9）軍事院校接受基礎、進修、深造教育期間假期之寒暑假、結訓假及新兵結訓假。（10）支援、因公受訓、職訓、講習及傷病住院。" },
+    { no: 83, q: "試述炊具費每人每月限額及範圍？", a: "（1）每人每月由副食費提列20元額度為限。（2）專供廚房、餐廳、購置消耗（零星）性用品及補充清潔用品、引火材料等支用，每月如有結餘時，應轉回副食費運用，不得移作他用。" },
+    { no: 84, q: "基層單位主官及預財士辦理移交時，監交人分別為何？", a: "（1）各基層單位主官，其監交人員為上級單位主官及主計單位主管（或其代表）。（2）各基層單位預財士，其監交人員為單位主官及主計單位主管（或其代表）。" },
+    { no: 85, q: "簡述內部審核之區分為何？", a: "（1）事前審核：謂事項入帳前之審核，著重收支之控制。（2）事後複核：謂事項入帳後之審核，著重憑證、帳表之複核與工作績效之查核。" },
+    { no: 86, q: "依會計法第9條，政府會計之組織為那五種？", a: "總會計、單位會計、分會計、附屬單位會計、附屬單位會計之分會計。" },
+    { no: 87, q: "施政計畫之特性為何？", a: "前瞻性、整體性、持續性。" },
+    { no: 88, q: "所屬各級單位主官及副主官行政費，上校及中校主官、副主官每月列支額度為何？", a: "（1）上校：6,600元。（2）中校：5,100元。" },
+    { no: 89, q: "依各級單位對經管財務行政事項人員實施內部控制之自我檢查作業要點，其範圍為何？", a: "（1）預算執行。（2）會計處理。（3）現金收支。（4）財產保管。（5）採購及處分財物。（6）領回轉發案件（含營外欠款情形）。（7）補助費跨機關通報案件。（8）主計部門財務輔檢督導情形。（9）臨時交辦及其他重要事項。" },
+    { no: 90, q: "國軍計畫預算制度之目的？", a: "（1）密切配合國家目標。（2）明確設計國軍兵力整建目標。（3）研究分析有關備選方案，貫徹政策節約。（4）顯示未來5年之全般需求，分期貫徹執行。（5）確保戰略目標與資源相結合，並經濟有效運用國家資源。" },
+    { no: 91, q: "依軍費預算執行及支付結報規定第8條第3項，自辦理暫付之日起，最遲不得超過幾天？", a: "其結報期限，自辦理暫付之日起，除外購案預付款等無法取得憑證結報者外，最遲不得超過45天（含例假日）。" },
+    { no: 92, q: "試述國防部所屬各級單位主官及副主官特別費使用範圍？", a: "（1）贈送婚喪喜慶之禮金、奠儀、禮品、花籃（圈）、喜幛、輓聯、中堂及匾額等支出。（2）對本單位及所屬單位人員以實物之獎（犒）賞、慰勞（問）及餐敘等支出。（3）對外部單位（即本單位及所屬單位以外單位）、民間團體與有關人士等招待、餽（捐）贈及慰問等支出。" },
+    { no: 93, q: "依國軍勞軍款處理作業規定，試論述捐贈者未指定用途之運用原則？", a: "捐贈者如未指定用途者，以運用於改善全體官兵之生活福利為原則，應編製收支計畫，經權責單位核准後動支，並於核准計畫之實施期間內支用完畢，否則應予報繳國庫。" },
+    { no: 94, q: "主副食費結餘改善方法？", a: "編訂「伙食結餘運用先期計劃表」，應按莒光日20％、慶生會20％、演訓、年節20％、平日加菜40％等方式分配於平時伙食內食用，避免一次加菜暴飲暴食；冬季應注意供應熱食。" },
+    { no: 95, q: "「國軍人員申領各項補助費精進計畫」之目的為何？", a: "（1）簡化基層業務負荷，落實有感服務。（2）使國軍人員於戶政事務所辦理結婚出生或死亡登記時，即可同步通報，以利快速獲撥補助款項。" },
+    { no: 96, q: "依國防部暨所屬各機關、部隊加菜金處理作業規定第5條，請簡述團體加菜金支用範圍？", a: "用途限於辦理單位各項團體加菜（獨立辦伙單位者，得納入伙食團帳戶），或辦理單位團體之餐敘及食品、水果、飲料等購置。" },
+    { no: 97, q: "何謂乙種財務代理人？", a: "預算支用單位於其編制人員內，指定適當人員辦理暫付款之收支結報或一般經費支付轉財務單位審核作業者，稱為乙種財務代理人，並受財務單位之業務督導。" },
+    { no: 98, q: "交接程序應由何人完成？但何種情況下可由單位主官指派適合人員代為辦理？", a: "（1）應由當事人親自完成。（2）因病卸任、在任病故、或逃匿，未委託代辦交代之人，或已委託代辦交代之人而未按時辦理交代事宜者，由其最高佐理人員代辦交代。" },
+    { no: 99, q: "依預算法第63條，各一級用途別科目間之流用規定為何？", a: "流入數額不得超過原預算數額百分之20，流出數額不得超過原預算數額百分之20。" },
+    { no: 100, q: "國軍執行災害防救專案申請行政費補助依據為何？其專案經費運用範圍為何？", a: "係以派遣連級單位（海、空軍比照）定額月支給與為基準，並視救災人數而定，凡救災兵力未達10人次者，加發四分之一個月額度，未達40人次者，加發半個月額度，逾40人次以上者，加發一個月額度，其運用範圍為臨時購置或雜項支出等項目。" }
+];
+
+let quizList = [];
+let currentIndex = 0;
+let score = 0;
+
+function handleRangeChange() {
+    const rangeVal = document.getElementById('select-range').value;
+    const customBox = document.getElementById('custom-range-box');
+    const countInput = document.getElementById('input-count');
+
+    if (rangeVal === 'custom') {
+        customBox.classList.remove('hidden');
+    } else {
+        customBox.classList.add('hidden');
+        if (rangeVal === '1-25' || rangeVal === '26-50') countInput.value = 25;
+        else if (rangeVal === '1-50' || rangeVal === '51-100') countInput.value = 50;
+        else if (rangeVal === '1-100') countInput.value = 100;
+    }
+}
+
+function escapeHtml(str) {
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function startQuiz() {
+    const rangeVal = document.getElementById('select-range').value;
+    let startNo = 1, endNo = 100;
+
+    if (rangeVal === '1-25') { startNo = 1; endNo = 25; }
+    else if (rangeVal === '26-50') { startNo = 26; endNo = 50; }
+    else if (rangeVal === '1-50') { startNo = 1; endNo = 50; }
+    else if (rangeVal === '51-100') { startNo = 51; endNo = 100; }
+    else if (rangeVal === '1-100') { startNo = 1; endNo = 100; }
+    else if (rangeVal === 'custom') {
+        startNo = parseInt(document.getElementById('custom-start').value, 10) || 1;
+        endNo = parseInt(document.getElementById('custom-end').value, 10) || 100;
+        if (startNo > endNo) [startNo, endNo] = [endNo, startNo];
+    }
+
+    // 依題號篩選
+    const pool = RAW_QUESTIONS.filter(item => item.no >= startNo && item.no <= endNo);
+    if (pool.length === 0) {
+        alert("所選範圍內無題目！");
+        return;
+    }
+
+    const orderMode = document.querySelector('input[name="order-mode"]:checked').value;
+    const countInput = parseInt(document.getElementById('input-count').value, 10);
+    const count = Math.min(Math.max(1, isNaN(countInput) ? pool.length : countInput), pool.length);
+
+    if (orderMode === 'random') {
+        quizList = [...pool].sort(() => 0.5 - Math.random()).slice(0, count);
+    } else {
+        quizList = pool.slice(0, count);
+    }
+
+    currentIndex = 0;
+    score = 0;
+
+    document.getElementById('view-setup').classList.add('hidden');
+    document.getElementById('view-result').classList.add('hidden');
+    document.getElementById('view-quiz').classList.remove('hidden');
+
+    showQuestion();
+}
+
+function showQuestion() {
+    const item = quizList[currentIndex];
+    document.getElementById('quiz-progress').textContent = `第 ${currentIndex + 1} 題 / 共 ${quizList.length} 題（原題號：第 ${item.no} 題）`;
+    document.getElementById('quiz-question').textContent = item.q;
+    
+    const ansArea = document.getElementById('quiz-answer');
+    ansArea.value = '';
+    ansArea.disabled = false;
+    
+    document.getElementById('btn-submit').classList.remove('hidden');
+    document.getElementById('btn-next').classList.add('hidden');
+    
+    const feedback = document.getElementById('quiz-feedback');
+    feedback.className = 'feedback hidden';
+    feedback.innerHTML = '';
+    
+    ansArea.focus();
+}
+
+function computeDiff(expected, actual) {
+    const m = expected.length, n = actual.length;
+    const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+
+    for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+            if (expected[i - 1] === actual[j - 1]) dp[i][j] = dp[i - 1][j - 1] + 1;
+            else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+        }
+    }
+
+    let i = m, j = n;
+    let standardDiff = [];
+    let userDiff = [];
+
+    while (i > 0 || j > 0) {
+        if (i > 0 && j > 0 && expected[i - 1] === actual[j - 1]) {
+            standardDiff.unshift(escapeHtml(expected[i - 1]));
+            userDiff.unshift(escapeHtml(actual[j - 1]));
+            i--; j--;
+        } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+            userDiff.unshift(`<span class="diff-del" title="多打/打錯">${escapeHtml(actual[j - 1])}</span>`);
+            j--;
+        } else {
+            standardDiff.unshift(`<span class="diff-ins" title="漏掉/打錯">${escapeHtml(expected[i - 1])}</span>`);
+            i--;
+        }
+    }
+
+    return { standardHtml: standardDiff.join(''), userHtml: userDiff.join('') };
+}
+
+function submitAnswer() {
+    const userAnswer = document.getElementById('quiz-answer').value.trim();
+    const standardAnswer = quizList[currentIndex].a.trim();
+    const feedback = document.getElementById('quiz-feedback');
+    const isCorrect = (userAnswer === standardAnswer);
+
+    document.getElementById('quiz-answer').disabled = true;
+    document.getElementById('btn-submit').classList.add('hidden');
+    document.getElementById('btn-next').classList.remove('hidden');
+    feedback.classList.remove('hidden');
+
+    if (isCorrect) {
+        score++;
+        feedback.className = 'feedback correct';
+        feedback.innerHTML = '<div class="feedback-title">✅ 完全正確！一字不漏</div>';
+    } else {
+        feedback.className = 'feedback wrong';
+        const diff = computeDiff(standardAnswer, userAnswer);
+        feedback.innerHTML = `
+            <div class="feedback-title">❌ 答案有誤</div>
+            <div style="font-weight: 600; margin-top: 0.5rem;">【標準答案】：</div>
+            <div class="diff-view">${diff.standardHtml}</div>
+            <div style="font-weight: 600; margin-top: 0.5rem;">【您的回答（標註錯誤）：】：</div>
+            <div class="diff-view">${diff.userHtml}</div>
+        `;
+    }
+}
+
+function nextQuestion() {
+    currentIndex++;
+    if (currentIndex < quizList.length) {
+        showQuestion();
+    } else {
+        showResult();
+    }
+}
+
+function showResult() {
+    document.getElementById('view-quiz').classList.add('hidden');
+    document.getElementById('view-result').classList.remove('hidden');
+
+    const total = quizList.length;
+    const rate = Math.round((score / total) * 100);
+    document.getElementById('res-rate').textContent = `${rate}%`;
+    document.getElementById('res-detail').textContent = `總題數 ${total} 題 ｜ 答對 ${score} 題 ｜ 答錯 ${total - score} 題`;
+}
+
+function restartQuiz() {
+    document.getElementById('view-result').classList.add('hidden');
+    document.getElementById('view-setup').classList.remove('hidden');
+}
+</script>
+</body>
+</html>
