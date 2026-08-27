@@ -10,6 +10,7 @@
             --primary-hover: #1d4ed8;
             --success: #15803d;
             --danger: #b91c1c;
+            --warning: #d97706;
             --bg: #f8fafc;
             --card-bg: #ffffff;
             --text: #0f172a;
@@ -49,7 +50,7 @@
             transition: border-color 0.2s;
         }
         select:focus, input[type="number"]:focus, textarea:focus { border-color: var(--primary); }
-        textarea { resize: vertical; min-height: 110px; font-family: inherit; }
+        textarea { resize: vertical; min-height: 120px; font-family: inherit; }
         .range-inputs {
             display: flex;
             align-items: center;
@@ -57,17 +58,12 @@
             margin-top: 0.5rem;
         }
         .range-inputs input { width: 50%; }
-        .radio-group {
-            display: flex;
-            gap: 1.5rem;
+        .total-hint {
+            font-size: 0.9rem;
+            color: var(--primary);
+            font-weight: 600;
             margin-top: 0.5rem;
-        }
-        .radio-group label {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-weight: normal;
-            cursor: pointer;
+            text-align: right;
         }
         .btn {
             display: inline-flex;
@@ -85,76 +81,285 @@
             transition: background-color 0.2s;
         }
         .btn:hover { background-color: var(--primary-hover); }
+        .btn-warning { background-color: var(--warning); }
+        .btn-warning:hover { background-color: #b45309; }
+        .btn-secondary { background-color: #64748b; }
+        .btn-secondary:hover { background-color: #475569; }
+        .btn-success { background-color: var(--success); }
+        .btn-success:hover { background-color: #166534; }
+        .btn-skip {
+            background-color: #f1f5f9;
+            color: #334155;
+            border: 1px solid var(--border);
+        }
+        .btn-skip:hover { background-color: #e2e8f0; color: #0f172a; }
+        .btn-group { display: flex; flex-direction: column; gap: 0.75rem; }
+        .quiz-btn-actions { display: flex; gap: 0.75rem; margin-top: 1rem; }
         .status-badge {
             display: inline-block;
-            padding: 0.25rem 0.5rem;
+            padding: 0.25rem 0.6rem;
             background-color: #dbeafe;
             color: var(--primary);
-            font-size: 0.875rem;
+            font-size: 0.9rem;
             font-weight: 600;
             border-radius: 4px;
-            margin-bottom: 1rem;
         }
-        .question-box { font-size: 1.1rem; font-weight: 600; margin-bottom: 1.25rem; line-height: 1.6; }
+        .quiz-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .quiz-topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .mastered-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            user-select: none;
+        }
+        .mastered-toggle input { cursor: pointer; width: 16px; height: 16px; }
+        .mastered-info-badge {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .mastered-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .btn-text-sm {
+            background: none;
+            border: none;
+            color: #0284c7;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 0;
+        }
+        .btn-text-sm:hover { color: #0369a1; }
+        .btn-text-danger { color: #dc2626; }
+        .btn-text-danger:hover { color: #991b1b; }
+        
+        /* 暫停中提示卡 */
+        .pause-banner {
+            background-color: #fef3c7;
+            border: 1px solid #fde68a;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+        .pause-title {
+            font-weight: bold;
+            color: #92400e;
+            font-size: 0.95rem;
+        }
+        .pause-desc {
+            font-size: 0.85rem;
+            color: #78350f;
+        }
+        .pause-btns {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.25rem;
+        }
+
+        .question-box { font-size: 1.15rem; font-weight: 600; margin-bottom: 1.25rem; line-height: 1.6; }
         .feedback { margin-top: 1.25rem; padding: 1rem; border-radius: 6px; }
         .feedback.correct { background-color: #dcfce7; border: 1px solid #bbf7d0; color: var(--success); }
         .feedback.wrong { background-color: #fee2e2; border: 1px solid #fecaca; color: var(--danger); }
         .feedback-title { font-weight: bold; font-size: 1.05rem; margin-bottom: 0.5rem; }
-        .diff-view { background: #fff; border: 1px solid var(--border); padding: 0.75rem; border-radius: 4px; margin-top: 0.5rem; font-size: 0.95rem; line-height: 1.6; }
+        .diff-view { background: #fff; border: 1px solid var(--border); padding: 0.75rem; border-radius: 4px; margin-top: 0.5rem; font-size: 0.95rem; line-height: 1.6; color: var(--text); word-break: break-all; }
         .diff-del { background-color: #fecaca; color: #991b1b; text-decoration: line-through; padding: 0 2px; }
         .diff-ins { background-color: #fed7aa; color: #9a3412; font-weight: bold; padding: 0 2px; }
         .stat-card { background-color: #f1f5f9; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem; text-align: center; }
         .stat-rate { font-size: 2rem; font-weight: bold; color: var(--primary); margin: 0.5rem 0; }
+        
+        /* 總題庫清單與篩選標籤 */
+        .filter-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .filter-tab {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: #fff;
+            font-size: 0.85rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        .filter-tab.active {
+            background-color: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+        .mastered-list {
+            max-height: 60vh;
+            overflow-y: auto;
+            margin: 0.5rem 0 1rem 0;
+            padding-right: 0.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .mastered-item-card {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            background: #fff;
+            transition: border-color 0.2s;
+        }
+        .mastered-item-card.is-mastered {
+            border-color: #93c5fd;
+            background-color: #f8fafc;
+        }
+        .mastered-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .mastered-item-q {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+            line-height: 1.5;
+        }
+        .mastered-item-a {
+            font-size: 0.95rem;
+            color: #334155;
+            background-color: #f8fafc;
+            padding: 0.6rem;
+            border-radius: 4px;
+            line-height: 1.5;
+            border-left: 3px solid var(--primary);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- 設定畫面 -->
+    <!-- 設定畫面（主頁） -->
     <div id="view-setup">
-        <h1>專業準則背誦測驗系統</h1>
+        <h1>財務士官高級班專業準則測驗系統</h1>
         
+        <div class="mastered-info-badge" id="mastered-badge">
+            <span id="mastered-stat-text">已標記熟記：0 題 / 共 100 題</span>
+            <div class="mastered-actions">
+                <button class="btn-text-sm" onclick="showMasteredList()">瀏覽總題庫 / 勾選熟記</button>
+                <button class="btn-text-sm btn-text-danger" onclick="resetMastered()">清空熟記</button>
+            </div>
+        </div>
+
+        <!-- 暫停進行中測驗的提示面板 -->
+        <div id="panel-paused-quiz" class="pause-banner hidden">
+            <div class="pause-title">📌 偵測到有尚未完成的測驗進度</div>
+            <div class="pause-desc" id="pause-status-desc">目前進度：第 1 題 / 共 50 題</div>
+            <div class="pause-btns">
+                <button class="btn btn-success" onclick="resumeQuiz()" style="font-size: 0.9rem; padding: 0.5rem 1rem;">▶️ 繼續未完成測驗</button>
+                <button class="btn btn-secondary" onclick="discardQuiz()" style="font-size: 0.9rem; padding: 0.5rem 1rem; background-color: #94a3b8;">放棄進度</button>
+            </div>
+        </div>
+
         <div class="setup-group">
-            <label for="select-range">選擇測驗範圍：</label>
-            <select id="select-range" onchange="handleRangeChange()">
-                <option value="1-25">第 01 - 25 題（共 25 題）</option>
-                <option value="26-50">第 26 - 50 題（共 25 題）</option>
-                <option value="1-50">第 01 - 50 題（共 50 題）</option>
-                <option value="51-100">第 51 - 100 題（共 50 題）</option>
-                <option value="1-100" selected>全部題庫（01 - 100 題）</option>
-                <option value="custom">自訂題號範圍...</option>
+            <label for="select-match-rule">答案判定方式：</label>
+            <select id="select-match-rule">
+                <option value="smart" selected>💡 寬鬆模式（要點字對即可，免編號標點、順序不拘）</option>
+                <option value="exact">🎯 嚴格模式（一字不漏，含編號/順序/標點；全半形皆可）</option>
             </select>
-            
-            <div id="custom-range-box" class="range-inputs hidden">
+        </div>
+
+        <div class="setup-group">
+            <label for="select-mode">測驗模式：</label>
+            <select id="select-mode" onchange="handleModeChange()">
+                <option value="preset-1-50" selected>第 01 - 50 題（含熟記題，出現可跳過）</option>
+                <option value="preset-51-100">第 51 - 100 題（含熟記題，出現可跳過）</option>
+                <option value="random-all">全題庫隨機抽取（直接跳過已熟記題）</option>
+                <option value="custom-range">自訂指定範圍（直接跳過已熟記題）</option>
+            </select>
+        </div>
+
+        <!-- 全題庫隨機抽取面板 -->
+        <div id="panel-random" class="setup-group hidden">
+            <label for="input-count" id="label-count">本次隨機抽取題數（排除已熟記後共 100 題）：</label>
+            <input type="number" id="input-count" min="1" max="100" value="30">
+        </div>
+
+        <!-- 自訂題號區間面板 -->
+        <div id="panel-custom" class="setup-group hidden">
+            <label>指定題庫索引區間（題號 1 ~ 100，將直接跳過已熟記題）：</label>
+            <div class="range-inputs">
                 <input type="number" id="custom-start" min="1" max="100" value="1" placeholder="起始題號">
                 <span>至</span>
                 <input type="number" id="custom-end" min="1" max="100" value="100" placeholder="結束題號">
             </div>
         </div>
 
-        <div class="setup-group">
-            <label>出題順序：</label>
-            <div class="radio-group">
-                <label><input type="radio" name="order-mode" value="random" checked> 隨機抽題</label>
-                <label><input type="radio" name="order-mode" value="sequential"> 循序出題</label>
-            </div>
-        </div>
+        <button class="btn" onclick="startNewQuizClick()" style="margin-top: 1rem;">開始測驗</button>
+    </div>
 
-        <div class="setup-group">
-            <label for="input-count">本次測驗題數：</label>
-            <input type="number" id="input-count" min="1" max="100" value="10">
+    <!-- 查看總題庫與管理畫面 -->
+    <div id="view-mastered" class="hidden">
+        <h1>總題庫瀏覽與熟記管理</h1>
+        <div class="filter-tabs">
+            <button class="filter-tab active" id="tab-all" onclick="switchBankFilter('all')">全部 (100)</button>
+            <button class="filter-tab" id="tab-unmastered" onclick="switchBankFilter('unmastered')">僅未熟記</button>
+            <button class="filter-tab" id="tab-mastered" onclick="switchBankFilter('mastered')">僅已熟記</button>
         </div>
-
-        <button class="btn" onclick="startQuiz()">開始測驗</button>
+        <div id="mastered-list-container" class="mastered-list"></div>
+        <button class="btn btn-secondary" onclick="hideMasteredList()" style="margin-top: 1rem;">關閉並返回主頁</button>
     </div>
 
     <!-- 答題畫面 -->
     <div id="view-quiz" class="hidden">
-        <div class="status-badge" id="quiz-progress">第 1 題 / 共 10 題</div>
+        <div class="quiz-topbar">
+            <div class="status-badge" id="quiz-progress">第 1 題 / 共 50 題</div>
+            <div class="quiz-topbar-right">
+                <label class="mastered-toggle">
+                    <input type="checkbox" id="chk-mastered" onchange="toggleMastered(this.checked)">
+                    <span>這題我已背熟</span>
+                </label>
+                <button class="btn-text-sm" onclick="pauseAndGoHome()" style="font-weight: 600; color: #475569;">⏸️ 暫停回主頁</button>
+            </div>
+        </div>
+        
         <div class="question-box" id="quiz-question"></div>
-        <textarea id="quiz-answer" placeholder="請使用「全形標點符號」輸入標準答案..."></textarea>
-        <button class="btn" id="btn-submit" onclick="submitAnswer()" style="margin-top: 1rem;">提交答案</button>
+        <textarea id="quiz-answer" placeholder="請輸入答案..."></textarea>
+        
+        <div class="quiz-btn-actions">
+            <button class="btn btn-skip hidden" id="btn-skip" onclick="skipMasteredQuestion()">⏭️ 已熟記，直接跳過</button>
+            <button class="btn" id="btn-submit" onclick="submitAnswer()">提交答案</button>
+        </div>
 
         <div id="quiz-feedback" class="feedback hidden"></div>
         <button class="btn hidden" id="btn-next" onclick="nextQuestion()" style="margin-top: 1rem;">下一題</button>
@@ -166,9 +371,13 @@
         <div class="stat-card">
             <div>正確率</div>
             <div class="stat-rate" id="res-rate">0%</div>
-            <div id="res-detail" style="color: var(--text-muted); font-size: 0.95rem;">總題數 10 題 ｜ 答對 0 題 ｜ 答錯 0 題</div>
+            <div id="res-detail" style="color: var(--text-muted); font-size: 0.95rem;">實際作答 50 題 ｜ 答對 0 題 ｜ 答錯 0 題</div>
         </div>
-        <button class="btn" onclick="restartQuiz()">重新測驗</button>
+        
+        <div class="btn-group">
+            <button class="btn btn-warning hidden" id="btn-retry-unmastered" onclick="startWrongReview()">複習本次錯題（僅未熟記）</button>
+            <button class="btn btn-secondary" onclick="restartQuiz()">重新設定 / 再次測驗</button>
+        </div>
     </div>
 </div>
 
@@ -276,22 +485,264 @@ const RAW_QUESTIONS = [
     { no: 100, q: "國軍執行災害防救專案申請行政費補助依據為何？其專案經費運用範圍為何？", a: "係以派遣連級單位（海、空軍比照）定額月支給與為基準，並視救災人數而定，凡救災兵力未達10人次者，加發四分之一個月額度，未達40人次者，加發半個月額度，逾40人次以上者，加發一個月額度，其運用範圍為臨時購置或雜項支出等項目。" }
 ];
 
+// 本地存儲：背熟的題目 ID 集合（以題目 no 為 key）
+let masteredSet = new Set(JSON.parse(localStorage.getItem('fin_mastered_questions') || '[]'));
+
+// 測驗即時狀態
 let quizList = [];
 let currentIndex = 0;
 let score = 0;
+let attemptedCount = 0;
+let wrongQuestions = [];
+let activeMatchRule = 'smart';
+let isQuizActive = false;
+let currentBankFilter = 'all';
 
-function handleRangeChange() {
-    const rangeVal = document.getElementById('select-range').value;
-    const customBox = document.getElementById('custom-range-box');
-    const countInput = document.getElementById('input-count');
+function saveMastered() {
+    localStorage.setItem('fin_mastered_questions', JSON.stringify([...masteredSet]));
+    renderMasteredStat();
+}
 
-    if (rangeVal === 'custom') {
-        customBox.classList.remove('hidden');
+function renderMasteredStat() {
+    const el = document.getElementById('mastered-stat-text');
+    if (el) el.textContent = `已標記熟記：${masteredSet.size} 題 / 共 ${RAW_QUESTIONS.length} 題`;
+    
+    const unmasteredTotal = RAW_QUESTIONS.length - masteredSet.size;
+    const labelCount = document.getElementById('label-count');
+    const inputCount = document.getElementById('input-count');
+    if (labelCount && inputCount) {
+        labelCount.textContent = `本次隨機抽取題數（排除已熟記後共 ${unmasteredTotal} 題）：`;
+        inputCount.max = unmasteredTotal;
+        if (parseInt(inputCount.value, 10) > unmasteredTotal) {
+            inputCount.value = Math.max(1, unmasteredTotal);
+        }
+    }
+}
+
+function resetMastered() {
+    if (confirm("確定要重設所有已熟記的題目標記嗎？")) {
+        masteredSet.clear();
+        saveMastered();
+        if (!document.getElementById('view-mastered').classList.contains('hidden')) {
+            renderMasteredList();
+        }
+    }
+}
+
+function toggleMastered(isChecked) {
+    if (!quizList[currentIndex]) return;
+    const qNo = quizList[currentIndex].no;
+    if (isChecked) {
+        masteredSet.add(qNo);
     } else {
-        customBox.classList.add('hidden');
-        if (rangeVal === '1-25' || rangeVal === '26-50') countInput.value = 25;
-        else if (rangeVal === '1-50' || rangeVal === '51-100') countInput.value = 50;
-        else if (rangeVal === '1-100') countInput.value = 100;
+        masteredSet.delete(qNo);
+    }
+    saveMastered();
+    const skipBtn = document.getElementById('btn-skip');
+    if (isChecked) {
+        skipBtn.classList.remove('hidden');
+    } else {
+        skipBtn.classList.add('hidden');
+    }
+}
+
+function toggleMasteredFromBank(qNo, isChecked) {
+    if (isChecked) {
+        masteredSet.add(qNo);
+    } else {
+        masteredSet.delete(qNo);
+    }
+    saveMastered();
+    renderMasteredList();
+}
+
+function switchBankFilter(filter) {
+    currentBankFilter = filter;
+    document.getElementById('tab-all').className = `filter-tab ${filter === 'all' ? 'active' : ''}`;
+    document.getElementById('tab-unmastered').className = `filter-tab ${filter === 'unmastered' ? 'active' : ''}`;
+    document.getElementById('tab-mastered').className = `filter-tab ${filter === 'mastered' ? 'active' : ''}`;
+    renderMasteredList();
+}
+
+function showMasteredList() {
+    document.getElementById('view-setup').classList.add('hidden');
+    document.getElementById('view-quiz').classList.add('hidden');
+    document.getElementById('view-result').classList.add('hidden');
+    document.getElementById('view-mastered').classList.remove('hidden');
+    renderMasteredList();
+}
+
+function hideMasteredList() {
+    document.getElementById('view-mastered').classList.add('hidden');
+    document.getElementById('view-setup').classList.remove('hidden');
+    handleModeChange();
+    renderMasteredStat();
+    renderPauseBanner();
+}
+
+function renderMasteredList() {
+    const container = document.getElementById('mastered-list-container');
+    
+    let displayList = RAW_QUESTIONS;
+    if (currentBankFilter === 'mastered') {
+        displayList = RAW_QUESTIONS.filter(q => masteredSet.has(q.no));
+    } else if (currentBankFilter === 'unmastered') {
+        displayList = RAW_QUESTIONS.filter(q => !masteredSet.has(q.no));
+    }
+
+    document.getElementById('tab-all').textContent = `全部 (100)`;
+    document.getElementById('tab-unmastered').textContent = `僅未熟記 (${100 - masteredSet.size})`;
+    document.getElementById('tab-mastered').textContent = `僅已熟記 (${masteredSet.size})`;
+
+    if (displayList.length === 0) {
+        container.innerHTML = `<div class="empty-state">目前此篩選條件下沒有任何題目！</div>`;
+        return;
+    }
+
+    container.innerHTML = displayList.map(item => {
+        const isM = masteredSet.has(item.no);
+        return `
+            <div class="mastered-item-card ${isM ? 'is-mastered' : ''}">
+                <div class="mastered-item-header">
+                    <strong style="font-size: 0.95rem; color: var(--primary);">第 ${item.no} 題</strong>
+                    <label class="mastered-toggle" style="font-size: 0.85rem; color: ${isM ? 'var(--primary)' : 'var(--text-muted)'}; font-weight: ${isM ? '600' : 'normal'};">
+                        <input type="checkbox" ${isM ? 'checked' : ''} onchange="toggleMasteredFromBank(${item.no}, this.checked)">
+                        <span>這題我已背熟</span>
+                    </label>
+                </div>
+                <div class="mastered-item-q">${escapeHtml(item.q)}</div>
+                <div class="mastered-item-a"><strong>標準答案：</strong>${escapeHtml(item.a)}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+function pauseAndGoHome() {
+    document.getElementById('view-quiz').classList.add('hidden');
+    document.getElementById('view-setup').classList.remove('hidden');
+    renderPauseBanner();
+    renderMasteredStat();
+}
+
+function renderPauseBanner() {
+    const banner = document.getElementById('panel-paused-quiz');
+    if (isQuizActive && quizList.length > 0) {
+        const desc = document.getElementById('pause-status-desc');
+        const ruleText = activeMatchRule === 'exact' ? '嚴格模式' : '寬鬆模式';
+        desc.textContent = `進行中進度：第 ${currentIndex + 1} 題 / 共 ${quizList.length} 題 ｜ 判定方式：${ruleText} ｜ 目前答對：${score} 題`;
+        banner.classList.remove('hidden');
+    } else {
+        banner.classList.add('hidden');
+    }
+}
+
+function resumeQuiz() {
+    if (!isQuizActive || quizList.length === 0) return;
+    document.getElementById('view-setup').classList.add('hidden');
+    document.getElementById('view-quiz').classList.remove('hidden');
+    
+    const ansArea = document.getElementById('quiz-answer');
+    if (!ansArea.disabled) {
+        ansArea.focus();
+    }
+}
+
+function discardQuiz() {
+    if (confirm("確定要放棄當前的測驗進度嗎？")) {
+        isQuizActive = false;
+        quizList = [];
+        currentIndex = 0;
+        score = 0;
+        attemptedCount = 0;
+        wrongQuestions = [];
+        renderPauseBanner();
+    }
+}
+
+function startNewQuizClick() {
+    if (isQuizActive) {
+        if (!confirm("目前有尚未完成的測驗進度，開始新測驗將覆蓋當前進度，確定開始嗎？")) {
+            return;
+        }
+    }
+    startQuiz();
+}
+
+function cleanSmartText(s) {
+    return s ? s.replace(/[\s\(\)（）\.,，。、:：;；—\-_【】「」『』]/g, '')
+                .replace(/[0-9０-９]/g, '')
+                .toLowerCase()
+                .trim() : '';
+}
+
+function normalizeExactText(s) {
+    if (!s) return '';
+    return s.replace(/\s+/g, '')
+            .replace(/[（\(\[\{【]/g, '（')
+            .replace(/[）\)\]\}】]/g, '）')
+            .replace(/[,，]/g, '，')
+            .replace(/[.。]/g, '。')
+            .replace(/[:：]/g, '：')
+            .replace(/[;；]/g, '；')
+            .replace(/[、]/g, '、')
+            .replace(/[—\-_]/g, '—')
+            .replace(/[０-９]/g, m => String.fromCharCode(m.charCodeAt(0) - 0xFEE0))
+            .trim();
+}
+
+function extractItems(s) {
+    if (!s) return [];
+    return s.split(/(?:[（\(]?\s*\d+\s*[）\.\、\)]|\n+)/)
+            .map(item => cleanSmartText(item))
+            .filter(item => item.length > 0);
+}
+
+function checkSmartMatch(userRaw, standardRaw) {
+    const cleanU = cleanSmartText(userRaw);
+    const cleanS = cleanSmartText(standardRaw);
+    if (!cleanU) return false;
+    if (cleanU === cleanS) return true;
+
+    const standardItems = extractItems(standardRaw);
+    if (standardItems.length > 1) {
+        let remainingUserText = cleanU;
+        let allMatched = true;
+
+        for (const item of standardItems) {
+            const idx = remainingUserText.indexOf(item);
+            if (idx === -1) {
+                allMatched = false;
+                break;
+            }
+            remainingUserText = remainingUserText.slice(0, idx) + remainingUserText.slice(idx + item.length);
+        }
+
+        if (allMatched && remainingUserText.length <= 2) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function checkExactMatch(userRaw, standardRaw) {
+    const normU = normalizeExactText(userRaw);
+    const normS = normalizeExactText(standardRaw);
+    return (normU.length > 0 && normU === normS);
+}
+
+function handleModeChange() {
+    const mode = document.getElementById('select-mode').value;
+    const pRandom = document.getElementById('panel-random');
+    const pCustom = document.getElementById('panel-custom');
+
+    pRandom.classList.add('hidden');
+    pCustom.classList.add('hidden');
+
+    if (mode === 'random-all') {
+        pRandom.classList.remove('hidden');
+        renderMasteredStat();
+    } else if (mode === 'custom-range') {
+        pCustom.classList.remove('hidden');
     }
 }
 
@@ -299,43 +750,63 @@ function escapeHtml(str) {
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-function startQuiz() {
-    const rangeVal = document.getElementById('select-range').value;
-    let startNo = 1, endNo = 100;
+function getRandomSubarray(arr, size) {
+    const shuffled = [...arr].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, size);
+}
 
-    if (rangeVal === '1-25') { startNo = 1; endNo = 25; }
-    else if (rangeVal === '26-50') { startNo = 26; endNo = 50; }
-    else if (rangeVal === '1-50') { startNo = 1; endNo = 50; }
-    else if (rangeVal === '51-100') { startNo = 51; endNo = 100; }
-    else if (rangeVal === '1-100') { startNo = 1; endNo = 100; }
-    else if (rangeVal === 'custom') {
-        startNo = parseInt(document.getElementById('custom-start').value, 10) || 1;
-        endNo = parseInt(document.getElementById('custom-end').value, 10) || 100;
-        if (startNo > endNo) [startNo, endNo] = [endNo, startNo];
+function startQuiz() {
+    activeMatchRule = document.getElementById('select-match-rule').value;
+    const mode = document.getElementById('select-mode').value;
+    let selected = [];
+
+    if (mode === 'preset-1-50') {
+        // 預設 1-50 題（含熟記題，答題時可手動跳過）
+        selected = RAW_QUESTIONS.filter(q => q.no >= 1 && q.no <= 50);
+    } else if (mode === 'preset-51-100') {
+        // 預設 51-100 題（含熟記題，答題時可手動跳過）
+        selected = RAW_QUESTIONS.filter(q => q.no >= 51 && q.no <= 100);
+    } else if (mode === 'random-all') {
+        // 全題庫隨機抽取（直接過濾掉已熟記題）
+        const unmasteredPool = RAW_QUESTIONS.filter(x => !masteredSet.has(x.no));
+        if (unmasteredPool.length === 0) {
+            alert("🎉 所有題目均已標記為熟記！請先清空或調整熟記名單。");
+            return;
+        }
+        const count = Math.min(Math.max(1, parseInt(document.getElementById('input-count').value, 10) || 1), unmasteredPool.length);
+        selected = getRandomSubarray(unmasteredPool, count);
+    } else if (mode === 'custom-range') {
+        // 自訂範圍出題（直接過濾掉區間內的已熟記題）
+        let start = (parseInt(document.getElementById('custom-start').value, 10) || 1);
+        let end = (parseInt(document.getElementById('custom-end').value, 10) || 100);
+        if (start > end) [start, end] = [end, start];
+        
+        selected = RAW_QUESTIONS.filter(q => q.no >= start && q.no <= end && !masteredSet.has(q.no));
+        if (selected.length === 0) {
+            alert(`第 ${start} 至 ${end} 題區間內的題目已全部標記為熟記！`);
+            return;
+        }
     }
 
-    // 依題號篩選
-    const pool = RAW_QUESTIONS.filter(item => item.no >= startNo && item.no <= endNo);
-    if (pool.length === 0) {
-        alert("所選範圍內無題目！");
+    if (selected.length === 0) {
+        alert("所選設定未包含任何題目！");
         return;
     }
 
-    const orderMode = document.querySelector('input[name="order-mode"]:checked').value;
-    const countInput = parseInt(document.getElementById('input-count').value, 10);
-    const count = Math.min(Math.max(1, isNaN(countInput) ? pool.length : countInput), pool.length);
+    initQuizSession(selected);
+}
 
-    if (orderMode === 'random') {
-        quizList = [...pool].sort(() => 0.5 - Math.random()).slice(0, count);
-    } else {
-        quizList = pool.slice(0, count);
-    }
-
+function initQuizSession(questions) {
+    quizList = questions.sort(() => 0.5 - Math.random());
     currentIndex = 0;
     score = 0;
+    attemptedCount = 0;
+    wrongQuestions = [];
+    isQuizActive = true;
 
     document.getElementById('view-setup').classList.add('hidden');
     document.getElementById('view-result').classList.add('hidden');
+    document.getElementById('view-mastered').classList.add('hidden');
     document.getElementById('view-quiz').classList.remove('hidden');
 
     showQuestion();
@@ -346,10 +817,27 @@ function showQuestion() {
     document.getElementById('quiz-progress').textContent = `第 ${currentIndex + 1} 題 / 共 ${quizList.length} 題（原題號：第 ${item.no} 題）`;
     document.getElementById('quiz-question').textContent = item.q;
     
+    const isMastered = masteredSet.has(item.no);
+    const chk = document.getElementById('chk-mastered');
+    chk.checked = isMastered;
+
+    const skipBtn = document.getElementById('btn-skip');
+    if (isMastered) {
+        skipBtn.classList.remove('hidden');
+    } else {
+        skipBtn.classList.add('hidden');
+    }
+
     const ansArea = document.getElementById('quiz-answer');
     ansArea.value = '';
     ansArea.disabled = false;
     
+    if (activeMatchRule === 'exact') {
+        ansArea.placeholder = "請輸入完整標準答案（一字不漏模式：須包含編號、順序與標點，全半形皆可）...";
+    } else {
+        ansArea.placeholder = "請輸入答案（寬鬆模式：免標點、免編號、順序不拘皆可自動判定）...";
+    }
+
     document.getElementById('btn-submit').classList.remove('hidden');
     document.getElementById('btn-next').classList.add('hidden');
     
@@ -358,6 +846,10 @@ function showQuestion() {
     feedback.innerHTML = '';
     
     ansArea.focus();
+}
+
+function skipMasteredQuestion() {
+    nextQuestion();
 }
 
 function computeDiff(expected, actual) {
@@ -393,29 +885,50 @@ function computeDiff(expected, actual) {
 }
 
 function submitAnswer() {
-    const userAnswer = document.getElementById('quiz-answer').value.trim();
-    const standardAnswer = quizList[currentIndex].a.trim();
+    attemptedCount++;
+    const rawU = document.getElementById('quiz-answer').value;
+    const item = quizList[currentIndex];
+    const rawS = item.a;
     const feedback = document.getElementById('quiz-feedback');
-    const isCorrect = (userAnswer === standardAnswer);
+    
+    let isCorrect = false;
+    if (activeMatchRule === 'exact') {
+        isCorrect = checkExactMatch(rawU, rawS);
+    } else {
+        isCorrect = checkSmartMatch(rawU, rawS);
+    }
 
     document.getElementById('quiz-answer').disabled = true;
     document.getElementById('btn-submit').classList.add('hidden');
+    document.getElementById('btn-skip').classList.add('hidden');
     document.getElementById('btn-next').classList.remove('hidden');
     feedback.classList.remove('hidden');
 
     if (isCorrect) {
         score++;
         feedback.className = 'feedback correct';
-        feedback.innerHTML = '<div class="feedback-title">✅ 完全正確！一字不漏</div>';
-    } else {
-        feedback.className = 'feedback wrong';
-        const diff = computeDiff(standardAnswer, userAnswer);
         feedback.innerHTML = `
-            <div class="feedback-title">❌ 答案有誤</div>
+            <div class="feedback-title">✅ 完全正確！${activeMatchRule === 'exact' ? '（一字不漏完全符合）' : '（要點齊全）'}</div>
             <div style="font-weight: 600; margin-top: 0.5rem;">【標準答案】：</div>
-            <div class="diff-view">${diff.standardHtml}</div>
-            <div style="font-weight: 600; margin-top: 0.5rem;">【您的回答（標註錯誤）：】：</div>
-            <div class="diff-view">${diff.userHtml}</div>
+            <div class="diff-view">${rawS}</div>
+        `;
+    } else {
+        wrongQuestions.push(item);
+        feedback.className = 'feedback wrong';
+        
+        let diff;
+        if (activeMatchRule === 'exact') {
+            diff = computeDiff(normalizeExactText(rawS), normalizeExactText(rawU));
+        } else {
+            diff = computeDiff(cleanSmartText(rawS), cleanSmartText(rawU));
+        }
+
+        feedback.innerHTML = `
+            <div class="feedback-title">❌ 答案有誤（${activeMatchRule === 'exact' ? '一字不漏比對未完全吻合' : '要點缺漏或不正確'}）</div>
+            <div style="font-weight: 600; margin-top: 0.5rem;">【標準答案】：</div>
+            <div class="diff-view">${rawS}</div>
+            <div style="font-weight: 600; margin-top: 0.5rem;">【缺漏/錯誤比對】：</div>
+            <div class="diff-view">標準要點：${diff.standardHtml}<br>您的作答：${diff.userHtml}</div>
         `;
     }
 }
@@ -430,19 +943,54 @@ function nextQuestion() {
 }
 
 function showResult() {
+    isQuizActive = false;
     document.getElementById('view-quiz').classList.add('hidden');
     document.getElementById('view-result').classList.remove('hidden');
 
     const total = quizList.length;
-    const rate = Math.round((score / total) * 100);
+    const skippedCount = total - attemptedCount;
+    const rate = attemptedCount > 0 ? Math.round((score / attemptedCount) * 100) : 0;
+    
     document.getElementById('res-rate').textContent = `${rate}%`;
-    document.getElementById('res-detail').textContent = `總題數 ${total} 題 ｜ 答對 ${score} 題 ｜ 答錯 ${total - score} 題`;
+    document.getElementById('res-detail').innerHTML = `
+        實際作答 <strong>${attemptedCount}</strong> 題${skippedCount > 0 ? `（跳過熟記 ${skippedCount} 題）` : ''}<br>
+        答對 <strong>${score}</strong> 題 ｜ 答錯 <strong>${attemptedCount - score}</strong> 題<br>
+        <span style="font-size:0.85rem; color: var(--text-muted);">（判定規則：${activeMatchRule === 'exact' ? '嚴格模式' : '寬鬆模式'}）</span>
+    `;
+
+    const unmasteredWrong = wrongQuestions.filter(q => !masteredSet.has(q.no));
+    const retryBtn = document.getElementById('btn-retry-unmastered');
+
+    if (unmasteredWrong.length > 0) {
+        retryBtn.textContent = `複習本次錯題（共 ${unmasteredWrong.length} 題未熟記）`;
+        retryBtn.classList.remove('hidden');
+    } else {
+        retryBtn.classList.add('hidden');
+    }
+}
+
+function startWrongReview() {
+    const unmasteredWrong = wrongQuestions.filter(q => !masteredSet.has(q.no));
+    if (unmasteredWrong.length === 0) {
+        alert("目前沒有未熟記的錯題！");
+        return;
+    }
+    initQuizSession(unmasteredWrong);
 }
 
 function restartQuiz() {
+    isQuizActive = false;
+    renderMasteredStat();
+    renderPauseBanner();
     document.getElementById('view-result').classList.add('hidden');
     document.getElementById('view-setup').classList.remove('hidden');
+    handleModeChange();
 }
+
+// 初始化統計標記與模式面板
+renderMasteredStat();
+handleModeChange();
+renderPauseBanner();
 </script>
 </body>
 </html>
