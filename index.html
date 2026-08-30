@@ -132,13 +132,13 @@
         .stat-card { background-color: var(--primary-light); border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem; text-align: center; border: 1px solid var(--border); }
         .stat-rate { font-size: 2rem; font-weight: bold; color: var(--primary); margin: 0.5rem 0; }
         
-        /* 🎴 3D 翻轉字卡樣式 (題目與答案皆維持置中，過長可捲動) */
+        /* 🎴 3D 翻轉字卡樣式 (優化硬體加速與流暢度) */
         .card-stage {
             position: relative; width: 100%; height: 390px; margin: 0.5rem 0 1rem 0; perspective: 1200px;
         }
         .flashcard {
             width: 100%; height: 100%; position: relative; transform-style: preserve-3d; border-radius: 16px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08); cursor: grab; will-change: transform, opacity;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); cursor: grab; will-change: transform;
         }
         .flashcard:active { cursor: grabbing; }
         .flashcard-inner {
@@ -154,7 +154,7 @@
         .flashcard-back { transform: rotateY(180deg); border-color: #86efac; background-color: var(--primary-light); }
         .flashcard-side-label { font-size: 0.8rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
         
-        /* 💡 核心修改：上下左右齊置中，過長時可藉由 overflow-y 捲動 */
+        /* 💡 完美置中，過長時可產生捲軸捲動 */
         .flashcard-body {
             flex-grow: 1; 
             display: flex; 
@@ -454,7 +454,7 @@ const RAW_QUESTIONS = [
     { no: 65, q: "三節加菜金為哪三節？給與為多少？", a: "春節、端節、秋節；50元。" },
     { no: 66, q: "戰時年度預算與年度戰時預算有何差異？", a: "（1）戰時年度預算：係指戰爭發生後所編列之預算。（2）年度戰時預算：係指年度內為因應可能發生戰事所編列之預算。" },
     { no: 67, q: "依預算法第37條規定，各機關單位預算，歲入應按何種科目編製？歲出應按何種科目編製之？", a: "（1）來源別。（2）政事別、計畫或業務別與用途別。" },
-    { no: 68, q: "依「國軍國內出差旅費報支規定」可申領旅費項目為何？並簡述之。", a: "（1）交通費：包括出差行程中必須搭乘之飛機、高鐵、船舶、火車、汽車、捷運、公共自行車等費用，均覈實報支；單位專備交通工具或出差人員領有免費票或搭乘便車者，不得報支交通費。搭乘飛機、高鐵、座（艙）位有分等之船舶、火車者，報支交通費時，應檢附票根或購票證明文件。駕駛自用汽車、機車出差者，其交通費得按必要路程之公里數（尾數不足一公里者，進位為一公里），汽車以每公里新臺幣三元、機車二元報支。（2）住宿費：出差地點距離單位所在地60公里以上，且有住宿事實者，得依報支數額表規定每日上限內（平日：3,500元；假日：4,500元），檢據覈實報支住宿費。（3）雜費：各單位依實際出差行程，達4小時以上得報支400元；未滿四小時者，雜費得報支200元；所稱實際出差行程，不含提前出發及延後返回所需路程時間。" },
+    { no: 68, q: "依「國軍國內出差旅費報支規定」可申領旅費項目為何？並簡述之。", a: "（1）交通費：包括出差行程中必須搭乘之飛機、高鐵、船舶、火車, 汽車、捷運、公共自行車等費用，均覈實報支；單位專備交通工具或出差人員領有免費票或搭乘便車者，不得報支交通費。搭乘飛機、高鐵、座（艙）位有分等之船舶、火車者，報支交通費時，應檢附票根或購票證明文件。駕駛自用汽車、機車出差者，其交通費得按必要路程之公里數（尾數不足一公里者，進位為一公里），汽車以每公里新臺幣三元、機車二元報支。（2）住宿費：出差地點距離單位所在地60公里以上，且有住宿事實者，得依報支數額表規定每日上限內（平日：3,500元；假日：4,500元），檢據覈實報支住宿費。（3）雜費：各單位依實際出差行程，達4小時以上得報支400元；未滿四小時者，雜費得報支200元；所稱實際出差行程，不含提前出發及延後返回所需路程時間。" },
     { no: 69, q: "國防部所屬各級單位主官及副主官行政費，動支對象為何？", a: "各級部隊、機關單位指揮官、副指揮官及中校以上主官、副主官等。" },
     { no: 70, q: "依預算法第2條，何謂分配預算？", a: "在法定預算範圍內，由各機關依法分配實施之計畫稱為分配預算。" },
     { no: 71, q: "試舉主副食費收入項目除預撥副食費及結補副食費等2項外，尚有那5項？", a: "（1）友軍及部內各單位支援、受訓等繳交之搭伙費。（2）僅扣副食差額。（3）餘糧價繳。（4）加菜金。（5）其他（如廚餘收入等）。" },
@@ -585,6 +585,36 @@ function renderCardContent() {
     document.getElementById('btn-card-prev').disabled = (cardIndex === 0);
 }
 
+// 💡 專門用於滑動換題的內容更新函數（不干擾動畫，解決閃爍卡頓）
+function renderCardContentWithoutReset() {
+    if (cardList.length === 0) return;
+    const item = cardList[cardIndex];
+    isCardFlipped = false;
+    
+    cardLastPositions[currentCardScope] = cardIndex;
+    localStorage.setItem('card_last_positions_v2', JSON.stringify(cardLastPositions));
+
+    document.getElementById('srs-box').classList.add('hidden');
+    document.getElementById('card-progress').textContent = `📝 題目 (${cardIndex + 1}/${cardList.length}) (#${item.no})`;
+
+    if (isReverseMode) {
+        currentFrontText = item.a;
+        currentBackText = item.q;
+        document.getElementById('card-front-body').textContent = item.a;
+        document.getElementById('card-back-body').textContent = item.q;
+        document.getElementById('card-back-title').textContent = "💡 回想原題目";
+    } else {
+        currentFrontText = item.q;
+        currentBackText = item.a;
+        document.getElementById('card-front-body').textContent = item.q;
+        document.getElementById('card-back-body').textContent = item.a;
+        document.getElementById('card-back-title').textContent = "💡 標準答案";
+    }
+
+    document.getElementById('chk-card-mastered').checked = masteredSet.has(item.no);
+    document.getElementById('btn-card-prev').disabled = (cardIndex === 0);
+}
+
 function flipCard() {
     if (Date.now() < suppressClickUntil) return;
     suppressClickUntil = Date.now() + 250;
@@ -605,36 +635,44 @@ function rateCard(level) {
     nextCard();
 }
 
-function animateSlideTo(direction, onComplete) {
+// 💡 優化過後的滑動換題動畫引擎
+function animateSlideTo(direction, targetIndex) {
     const card = document.getElementById('flashcard-card');
-    const destX = (direction === 'left') ? -window.innerWidth * 1.1 : window.innerWidth * 1.1;
-    card.style.transition = 'transform 0.25s ease-in, opacity 0.2s ease';
-    card.style.transform = `translate(${destX}px, 15px) rotate(${(direction === 'left') ? -15 : 15}deg)`;
+    const flyOutX = (direction === 'left') ? -window.innerWidth * 1.2 : window.innerWidth * 1.2;
+    
+    card.style.transition = 'transform 0.2s ease-in, opacity 0.2s ease-in';
+    card.style.transform = `translate(${flyOutX}px, 0px) rotate(${direction === 'left' ? -15 : 15}deg)`;
     card.style.opacity = '0';
 
     setTimeout(() => {
-        onComplete();
+        cardIndex = targetIndex;
+        renderCardContentWithoutReset();
+
+        const flyInStartX = (direction === 'left') ? window.innerWidth * 1.2 : -window.innerWidth * 1.2;
         card.style.transition = 'none';
-        card.style.transform = `translate(${(direction === 'left') ? window.innerWidth * 0.8 : -window.innerWidth * 0.8}px, 0px) rotate(0deg)`;
+        card.style.transform = `translate(${flyInStartX}px, 0px) rotate(0deg)`;
         card.style.opacity = '0';
+
+        card.getBoundingClientRect();
+
         requestAnimationFrame(() => {
             card.style.transition = 'transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.25), opacity 0.25s ease';
             card.style.transform = 'translate(0px, 0px) rotate(0deg)';
             card.style.opacity = '1';
         });
-    }, 240);
+    }, 200);
 }
 
 function prevCard() {
     if (cardIndex <= 0) return;
     document.getElementById('srs-box').classList.add('hidden');
-    animateSlideTo('right', () => { cardIndex--; renderCardContent(); });
+    animateSlideTo('right', cardIndex - 1);
 }
 
 function nextCard() {
     if (cardIndex < cardList.length - 1) {
         document.getElementById('srs-box').classList.add('hidden');
-        animateSlideTo('left', () => { cardIndex++; renderCardContent(); });
+        animateSlideTo('left', cardIndex + 1);
     } else {
         alert("🎉 本題庫字卡已全部背誦完畢！");
         exitFlashcards();
@@ -701,8 +739,9 @@ cardEl.addEventListener('touchstart', (e) => {
 cardEl.addEventListener('touchmove', (e) => {
     if (!isDragging) return;
     currentX = e.touches[0].clientX; currentY = e.touches[0].clientY;
-    if (Math.abs(currentX - startX) > 8 || Math.abs(currentY - startY) > 8) isMoved = true;
-    cardEl.style.transform = `translate(${currentX - startX}px, ${(currentY - startY) * 0.25}px) rotate(${(currentX - startX) * 0.05}deg)`;
+    const deltaX = currentX - startX;
+    if (Math.abs(deltaX) > 8 || Math.abs(currentY - startY) > 8) isMoved = true;
+    cardEl.style.transform = `translate(${deltaX}px, ${(currentY - startY) * 0.25}px) rotate(${deltaX * 0.05}deg)`;
 }, { passive: true });
 
 cardEl.addEventListener('touchend', () => {
@@ -712,9 +751,13 @@ cardEl.addEventListener('touchend', () => {
     if (Math.abs(deltaX) > 75) {
         suppressClickUntil = Date.now() + 350;
         document.getElementById('srs-box').classList.add('hidden');
-        if (deltaX < 0 && cardIndex < cardList.length - 1) animateSlideTo('left', () => { cardIndex++; renderCardContent(); });
-        else if (deltaX > 0 && cardIndex > 0) animateSlideTo('right', () => { cardIndex--; renderCardContent(); });
-        else springBack();
+        if (deltaX < 0 && cardIndex < cardList.length - 1) {
+            animateSlideTo('left', cardIndex + 1);
+        } else if (deltaX > 0 && cardIndex > 0) {
+            animateSlideTo('right', cardIndex - 1);
+        } else {
+            springBack();
+        }
     } else {
         if (!isMoved) flipCard();
         else springBack();
