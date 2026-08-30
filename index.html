@@ -135,9 +135,9 @@
         .stat-card { background-color: var(--primary-light); border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem; text-align: center; border: 1px solid var(--border); }
         .stat-rate { font-size: 2rem; font-weight: bold; color: var(--primary); margin: 0.5rem 0; }
         
-        /* 🎴 3D 翻轉字卡樣式 */
+        /* 🎴 3D 翻轉字卡樣式 (已針對長答案優化高度與捲動) */
         .card-stage {
-            position: relative; width: 100%; height: 340px; margin: 0.5rem 0 1rem 0; perspective: 1200px;
+            position: relative; width: 100%; height: 390px; margin: 0.5rem 0 1rem 0; perspective: 1200px;
         }
         .flashcard {
             width: 100%; height: 100%; position: relative; transform-style: preserve-3d; border-radius: 16px;
@@ -151,16 +151,17 @@
         .flashcard-inner.is-flipped { transform: rotateY(180deg); }
         .flashcard-face {
             position: absolute; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden;
-            border-radius: 16px; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box; border: 2px solid var(--border); background-color: var(--card-bg);
+            border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box; border: 2px solid var(--border); background-color: var(--card-bg);
         }
         .flashcard-front { border-color: #93c5fd; }
         .flashcard-back { transform: rotateY(180deg); border-color: #86efac; background-color: var(--primary-light); }
-        .flashcard-side-label { font-size: 0.8rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+        .flashcard-side-label { font-size: 0.8rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
         .flashcard-body {
-            flex-grow: 1; display: flex; align-items: center; justify-content: center; text-align: left;
-            font-size: 1.05rem; line-height: 1.65; font-weight: 600; overflow-y: auto; padding: 0.5rem 0; word-break: break-word; user-select: text; -webkit-user-select: text;
+            flex-grow: 1; display: flex; align-items: flex-start; justify-content: flex-start; text-align: left;
+            font-size: 0.96rem; line-height: 1.6; font-weight: 600; overflow-y: auto; padding: 0.4rem 0.2rem; word-break: break-word; user-select: text; -webkit-user-select: text;
         }
-        .flashcard-hint { font-size: 0.78rem; color: var(--text-muted); text-align: center; user-select: none; }
+        .flashcard-back .flashcard-body { font-weight: 500; }
+        .flashcard-hint { font-size: 0.78rem; color: var(--text-muted); text-align: center; user-select: none; flex-shrink: 0; margin-top: 0.25rem; }
 
         .ergonomic-bar {
             display: flex; align-items: center; justify-content: space-between; background: var(--card-bg);
@@ -324,10 +325,9 @@
         <div id="quiz-feedback" class="feedback hidden"></div>
     </div>
 
-    <!-- 🎴 智慧字卡背誦畫面（完整記憶上次進度 + 正反對調 + SRS + 題號排序） -->
+    <!-- 🎴 智慧字卡背誦畫面 -->
     <div id="view-flashcard" class="hidden">
         <div class="quiz-topbar">
-            <!-- 🎴 字卡專屬題庫範圍下拉選單 -->
             <select id="select-card-scope" onchange="changeCardScope(this.value)" style="width:auto; padding:0.3rem 0.6rem; font-size:0.85rem; font-weight:700; border-radius:20px; border-color:#c7d2fe; background:var(--primary-light); color:var(--primary); outline:none; cursor:pointer;">
                 <option value="unmastered" selected>📚 僅未熟記題庫</option>
                 <option value="all">🌐 全部總題庫 (100題)</option>
@@ -370,7 +370,7 @@
                             <span id="card-back-title">💡 標準答案</span>
                             <button class="btn-text-sm" onclick="event.stopPropagation(); speakText(currentBackText);" style="color:var(--success);" title="語音朗讀">🔊 朗讀</button>
                         </div>
-                        <div class="flashcard-body" id="card-back-body" style="font-weight:500;"></div>
+                        <div class="flashcard-body" id="card-back-body"></div>
                         <div class="flashcard-hint">👆 點擊卡片任意處翻回正面 ｜ 👈 左右滑動切換 👉</div>
                     </div>
                 </div>
@@ -567,7 +567,6 @@ let isCardFlipped = false;
 let isReverseMode = false;
 let currentCardScope = 'unmastered';
 let autoPlayInterval = null;
-let isAnimating = false;
 let suppressClickUntil = 0;
 
 function saveAllData() {
@@ -606,13 +605,6 @@ if (localStorage.getItem('dark_mode_enabled_v2') === 'true') {
 
 function renderDashboard() {
     const totalM = masteredSet.size;
-    const easyM = RAW_QUESTIONS.filter(q => q.diff === 'easy' && masteredSet.has(q.no)).length;
-    const midM = RAW_QUESTIONS.filter(q => q.diff === 'mid' && masteredSet.has(q.no)).length;
-    const hardM = RAW_QUESTIONS.filter(q => q.diff === 'hard' && masteredSet.has(q.no)).length;
-
-    const elTotal = document.getElementById('dash-total');
-    if (elTotal) elTotal.textContent = `${totalM}/100`;
-
     updateStudyStreak();
 }
 
@@ -634,9 +626,7 @@ function closeMasteredSuccessModal() {
     document.getElementById('view-result').classList.add('hidden');
     document.getElementById('view-setup').classList.remove('hidden');
     
-    renderMasteredStat();
     handleModeChange();
-    renderPauseBanner();
 }
 
 function resetAllData() {
@@ -646,7 +636,6 @@ function resetAllData() {
         cardLastPositions = {};
         saveAllData();
         renderDashboard();
-        if (!document.getElementById('view-mastered').classList.contains('hidden')) renderMasteredList();
     }
 }
 
@@ -660,52 +649,11 @@ function handleModeChange() {
 
     if (mode === 'random-all') {
         pRandom.classList.remove('hidden');
-        renderMasteredStat();
     } else if (mode === 'custom-range') {
         pCustom.classList.remove('hidden');
     }
 }
 
-function startQuiz() {
-    activeMatchRule = document.getElementById('select-match-rule').value;
-    const mode = document.getElementById('select-mode').value;
-    let selected = [];
-
-    if (mode === 'preset-1-50') {
-        selected = RAW_QUESTIONS.filter(q => q.no >= 1 && q.no <= 50);
-    } else if (mode === 'preset-51-100') {
-        selected = RAW_QUESTIONS.filter(q => q.no >= 51 && q.no <= 100);
-    } else if (mode === 'random-all') {
-        const unmasteredPool = RAW_QUESTIONS.filter(x => !masteredSet.has(x.no));
-        if (unmasteredPool.length === 0) {
-            alert("🎉 所有題目均已標記為熟記！請先清空或調整熟記名單。");
-            return;
-        }
-        const count = Math.min(Math.max(1, parseInt(document.getElementById('input-count').value, 10) || 1), unmasteredPool.length);
-        selected = getRandomSubarray(unmasteredPool, count);
-    } else if (mode === 'custom-range') {
-        let start = (parseInt(document.getElementById('custom-start').value, 10) || 1);
-        let end = (parseInt(document.getElementById('custom-end').value, 10) || 100);
-        if (start > end) [start, end] = [end, start];
-        
-        selected = RAW_QUESTIONS.filter(q => q.no >= start && q.no <= end && !masteredSet.has(q.no));
-        if (selected.length === 0) {
-            alert(`第 ${start} 至 ${end} 題區間內的題目已全部標記為熟記！`);
-            return;
-        }
-    }
-
-    if (selected.length === 0) {
-        alert("所選設定未包含任何題目！");
-        return;
-    }
-
-    initQuizSession(selected);
-}
-
-/* ========================================================
-   🎴 智慧字卡背誦系統（完整功能整合）
-   ======================================================== */
 function openFlashcardSetup() {
     document.getElementById('view-setup').classList.add('hidden');
     document.getElementById('view-quiz').classList.add('hidden');
@@ -731,9 +679,7 @@ function changeCardScope(scope) {
         pool = [...RAW_QUESTIONS];
     }
 
-    // 💡 嚴格依照題號升冪排序
     cardList = pool.sort((a, b) => a.no - b.no);
-    
     const savedIdx = cardLastPositions[scope];
     cardIndex = (typeof savedIdx === 'number' && savedIdx < cardList.length) ? savedIdx : 0;
     
@@ -890,7 +836,6 @@ function exitFlashcards() {
     document.getElementById('view-setup').classList.remove('hidden');
     renderDashboard();
     handleModeChange();
-    renderPauseBanner();
 }
 
 function speakText(text) {
@@ -905,31 +850,22 @@ function speakText(text) {
     }
 }
 
-/* ========================================================
-   👆 觸控與滑鼠拖曳換題手勢
-   ======================================================== */
 const cardEl = document.getElementById('flashcard-card');
 let isDragging = false;
-let startX = 0;
-let startY = 0;
-let currentX = 0;
-let currentY = 0;
+let startX = 0, startY = 0, currentX = 0, currentY = 0;
 let isMovedSignificantly = false;
 
 function onDragStart(clientX, clientY) {
     isDragging = true;
     isMovedSignificantly = false;
-    startX = clientX;
-    startY = clientY;
-    currentX = clientX;
-    currentY = clientY;
+    startX = clientX; startY = clientY;
+    currentX = clientX; currentY = clientY;
     cardEl.style.transition = 'none';
 }
 
 function onDragMove(clientX, clientY) {
     if (!isDragging) return;
-    currentX = clientX;
-    currentY = clientY;
+    currentX = clientX; currentY = clientY;
     const deltaX = currentX - startX;
     const deltaY = currentY - startY;
 
@@ -990,74 +926,17 @@ cardEl.addEventListener('touchmove', (e) => {
     onDragMove(e.touches[0].clientX, e.touches[0].clientY);
 }, { passive: true });
 
-cardEl.addEventListener('touchend', (e) => {
-    if (!isDragging) return;
-    onDragEnd();
-});
+cardEl.addEventListener('touchend', () => { if (isDragging) onDragEnd(); });
 
 cardEl.addEventListener('mousedown', (e) => {
     if (e.target.closest('button')) return;
     onDragStart(e.clientX, e.clientY);
 });
 
-window.addEventListener('mousemove', (e) => {
-    if (isDragging) onDragMove(e.clientX, e.clientY);
-});
+window.addEventListener('mousemove', (e) => { if (isDragging) onDragMove(e.clientX, e.clientY); });
+window.addEventListener('mouseup', () => { if (isDragging) onDragEnd(); });
 
-window.addEventListener('mouseup', () => {
-    if (isDragging) onDragEnd();
-});
-
-// 殘留函數相容性對應
-function initQuizSession(questions) {
-    quizList = questions.sort(() => 0.5 - Math.random());
-    userAnswers = new Array(quizList.length).fill(null);
-    currentIndex = 0;
-    isQuizActive = true;
-
-    document.getElementById('view-setup').classList.add('hidden');
-    document.getElementById('view-result').classList.add('hidden');
-    document.getElementById('view-mastered').classList.add('hidden');
-    document.getElementById('view-quiz').classList.remove('hidden');
-
-    showQuestion();
-}
-
-function saveCurrentDraft(val) {
-    if (!userAnswers[currentIndex]) {
-        userAnswers[currentIndex] = { userAnswer: val, isSubmitted: false, isCorrect: false, feedbackHtml: '', isSkipped: false };
-    } else {
-        userAnswers[currentIndex].userAnswer = val;
-    }
-}
-
-function prevQuestion() {
-    if (currentIndex > 0) { currentIndex--; showQuestion(); }
-}
-
-function nextQuestion() {
-    currentIndex++;
-    if (currentIndex < quizList.length) showQuestion();
-    else showResult();
-}
-
-function skipMasteredQuestion() {
-    userAnswers[currentIndex] = { userAnswer: '(已熟記跳過)', isSubmitted: true, isCorrect: true, isSkipped: true, feedbackHtml: `<div class="feedback-title">⏭️ 此題已標記熟記並直接略過</div>` };
-    nextQuestion();
-}
-
-function restartQuiz() {
-    isQuizActive = false;
-    renderMasteredStat();
-    renderPauseBanner();
-    document.getElementById('view-result').classList.add('hidden');
-    document.getElementById('view-setup').classList.remove('hidden');
-    handleModeChange();
-}
-
-renderMasteredStat();
 handleModeChange();
-renderPauseBanner();
 renderDashboard();
 </script>
 </body>
