@@ -128,14 +128,11 @@
         .feedback.correct { background-color: #dcfce7; border: 1px solid #bbf7d0; color: var(--success); }
         .feedback.wrong { background-color: #fee2e2; border: 1px solid #fecaca; color: var(--danger); }
         .feedback-title { font-weight: bold; font-size: 1.05rem; margin-bottom: 0.5rem; }
-        .diff-view { background: var(--card-bg); border: 1px solid var(--border); padding: 0.75rem; border-radius: 4px; margin-top: 0.5rem; font-size: 0.95rem; line-height: 1.6; word-break: break-all; }
-        .diff-del { background-color: #fecaca; color: #991b1b; text-decoration: line-through; padding: 0 2px; }
-        .diff-ins { background-color: #fed7aa; color: #9a3412; font-weight: bold; padding: 0 2px; }
         
         .stat-card { background-color: var(--primary-light); border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem; text-align: center; border: 1px solid var(--border); }
         .stat-rate { font-size: 2rem; font-weight: bold; color: var(--primary); margin: 0.5rem 0; }
         
-        /* 🎴 3D 翻轉字卡樣式 (已針對長答案優化高度與捲動) */
+        /* 🎴 3D 翻轉字卡樣式 (題目與答案皆維持置中，過長可捲動) */
         .card-stage {
             position: relative; width: 100%; height: 390px; margin: 0.5rem 0 1rem 0; perspective: 1200px;
         }
@@ -156,9 +153,22 @@
         .flashcard-front { border-color: #93c5fd; }
         .flashcard-back { transform: rotateY(180deg); border-color: #86efac; background-color: var(--primary-light); }
         .flashcard-side-label { font-size: 0.8rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        
+        /* 💡 核心修改：上下左右齊置中，過長時可藉由 overflow-y 捲動 */
         .flashcard-body {
-            flex-grow: 1; display: flex; align-items: flex-start; justify-content: flex-start; text-align: left;
-            font-size: 0.96rem; line-height: 1.6; font-weight: 600; overflow-y: auto; padding: 0.4rem 0.2rem; word-break: break-word; user-select: text; -webkit-user-select: text;
+            flex-grow: 1; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            text-align: center;
+            font-size: 0.96rem; 
+            line-height: 1.6; 
+            font-weight: 600; 
+            overflow-y: auto; 
+            padding: 0.4rem 0.5rem; 
+            word-break: break-word; 
+            user-select: text; 
+            -webkit-user-select: text;
         }
         .flashcard-back .flashcard-body { font-weight: 500; }
         .flashcard-hint { font-size: 0.78rem; color: var(--text-muted); text-align: center; user-select: none; flex-shrink: 0; margin-top: 0.25rem; }
@@ -191,12 +201,6 @@
         }
         .filter-tab.active { background-color: var(--primary); color: #fff; border-color: var(--primary); }
         .mastered-list { max-height: 60vh; overflow-y: auto; margin: 0.5rem 0 1rem 0; padding-right: 0.25rem; display: flex; flex-direction: column; gap: 1rem; }
-        .mastered-item-card { border: 1px solid var(--border); border-radius: 8px; padding: 1rem; background: var(--card-bg); }
-        .mastered-item-card.is-mastered { border-color: #93c5fd; background-color: var(--primary-light); }
-        .mastered-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
-        .mastered-item-q { font-weight: 600; margin-bottom: 0.5rem; color: var(--text); line-height: 1.5; }
-        .mastered-item-a { font-size: 0.95rem; color: var(--text); background-color: var(--primary-light); padding: 0.6rem; border-radius: 4px; line-height: 1.5; border-left: 3px solid var(--primary); }
-        .empty-state { text-align: center; padding: 2.5rem 1rem; color: var(--text-muted); font-size: 0.95rem; }
         
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -228,16 +232,6 @@
             </div>
         </div>
 
-        <!-- 暫停進行中測驗的提示面板 -->
-        <div id="panel-paused-quiz" class="pause-banner hidden">
-            <div class="pause-title">📌 偵測到有尚未完成的測驗進度</div>
-            <div class="pause-desc" id="pause-status-desc">目前進度：第 1 題 / 共 50 題</div>
-            <div class="pause-btns">
-                <button class="btn btn-success" onclick="resumeQuiz()" style="font-size: 0.9rem; padding: 0.5rem 1rem;">▶️ 繼續未完成測驗</button>
-                <button class="btn btn-secondary" onclick="discardQuiz()" style="font-size: 0.9rem; padding: 0.5rem 1rem; background-color: #94a3b8;">放棄進度</button>
-            </div>
-        </div>
-
         <div class="setup-group">
             <label for="select-match-rule">答案判定方式：</label>
             <select id="select-match-rule">
@@ -256,15 +250,13 @@
             </select>
         </div>
 
-        <!-- 全題庫隨機抽取面板 -->
         <div id="panel-random" class="setup-group hidden">
-            <label for="input-count" id="label-count">本次隨機抽取題數（排除已熟記後共 100 題）：</label>
+            <label for="input-count">本次隨機抽取題數：</label>
             <input type="number" id="input-count" min="1" max="100" value="30">
         </div>
 
-        <!-- 自訂題號區間面板 -->
         <div id="panel-custom" class="setup-group hidden">
-            <label>指定題庫索引區間（題號 1 ~ 100，將直接跳過已熟記題）：</label>
+            <label>指定題庫索引區間（題號 1 ~ 100）：</label>
             <div class="range-inputs">
                 <input type="number" id="custom-start" min="1" max="100" value="1" placeholder="起始題號">
                 <span>至</span>
@@ -275,15 +267,6 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1.25rem;">
             <button class="btn" onclick="startNewQuizClick()">✍️ 開始打字測驗</button>
             <button class="btn btn-purple" onclick="openFlashcardSetup()">🎴 進入智慧字卡</button>
-        </div>
-
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.85rem;">
-            <button class="btn-text-sm" onclick="showMasteredList()">📖 總題庫瀏覽 / 列印</button>
-            <div>
-                <button class="btn-text-sm" onclick="showBackupModal()">💾 進度備份</button>
-                <span style="color: var(--border); margin: 0 4px;">|</span>
-                <button class="btn-text-sm" style="color: var(--danger);" onclick="resetAllData()">⚠️ 清空資料</button>
-            </div>
         </div>
     </div>
 
@@ -358,7 +341,6 @@
                             <span id="card-progress">📝 題目 (1/100)</span>
                             <div style="display:flex; gap:0.4rem; align-items:center;">
                                 <button class="btn-text-sm" onclick="event.stopPropagation(); speakText(currentFrontText);" title="語音朗讀">🔊 朗讀</button>
-                                <span id="card-diff-tag" class="diff-tag diff-tag-easy">準則</span>
                             </div>
                         </div>
                         <div class="flashcard-body" id="card-front-body"></div>
@@ -400,48 +382,6 @@
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
             </button>
         </div>
-    </div>
-
-    <!-- 結算畫面 -->
-    <div id="view-result" class="hidden">
-        <h1>測驗結算</h1>
-        <div class="stat-card">
-            <div>正確率</div>
-            <div class="stat-rate" id="res-rate">0%</div>
-            <div id="res-detail" style="color: var(--text-muted); font-size: 0.95rem;">實際作答 50 題 ｜ 答對 0 題 ｜ 答錯 0 題</div>
-        </div>
-        
-        <div class="btn-group">
-            <button class="btn btn-warning hidden" id="btn-retry-unmastered" onclick="startWrongReview()">複習本次錯題（僅未熟記）</button>
-            <button class="btn btn-secondary" onclick="restartQuiz()">重新設定 / 再次測驗</button>
-        </div>
-    </div>
-</div>
-
-<!-- 💾 備份與同步彈窗 -->
-<div id="modal-backup" class="modal-overlay hidden">
-    <div class="modal-card">
-        <h2 style="font-size: 1.25rem; color: var(--primary); margin-bottom: 0.75rem;">學習進度備份與跨裝置同步</h2>
-        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">複製下方代碼可至手機或其他電腦貼上還原熟記與錯題進度：</p>
-        <textarea id="txt-backup" style="font-size:0.8rem; height:90px;" onclick="this.select()"></textarea>
-        <div style="display:flex; gap:0.5rem; margin-top:1rem;">
-            <button class="btn" onclick="copyBackupCode()">📋 複製代碼</button>
-            <button class="btn btn-warning" onclick="applyImportCode()">📥 貼上並還原</button>
-            <button class="btn btn-secondary" onclick="closeBackupModal()">關閉</button>
-        </div>
-    </div>
-</div>
-
-<!-- 100題全熟記彈窗 -->
-<div id="modal-all-mastered" class="modal-overlay hidden">
-    <div class="modal-card">
-        <div class="modal-icon">🎖️</div>
-        <div class="modal-title">恭喜神功大成！</div>
-        <div class="modal-desc">
-            太強了！您已將專業準則全數 <strong>100 題</strong> 題庫完全背熟！<br>
-            預祝財務士高班專業測驗旗開得勝、奪得滿分！
-        </div>
-        <button class="btn btn-warning" onclick="closeMasteredSuccessModal()" style="font-size: 1.05rem; padding: 0.85rem;">🏆 凱旋返回主頁</button>
     </div>
 </div>
 
@@ -553,14 +493,6 @@ let masteredSet = new Set(JSON.parse(localStorage.getItem('fin_mastered_question
 let wrongStats = JSON.parse(localStorage.getItem('fin_wrong_stats_v2') || '{}');
 let cardLastPositions = JSON.parse(localStorage.getItem('card_last_positions_v2') || '{}');
 
-let quizList = [];
-let userAnswers = [];
-let currentIndex = 0;
-let activeMatchRule = 'smart';
-let isQuizActive = false;
-let currentBankFilter = 'all';
-
-// 字卡背誦專屬變數
 let cardList = [];
 let cardIndex = 0;
 let isCardFlipped = false;
@@ -573,25 +505,6 @@ function saveAllData() {
     localStorage.setItem('fin_mastered_questions_v2', JSON.stringify([...masteredSet]));
     localStorage.setItem('fin_wrong_stats_v2', JSON.stringify(wrongStats));
     localStorage.setItem('card_last_positions_v2', JSON.stringify(cardLastPositions));
-    renderDashboard();
-    checkAllMasteredCelebration();
-}
-
-function updateStudyStreak() {
-    const today = new Date().toISOString().slice(0, 10);
-    let streakData = JSON.parse(localStorage.getItem('study_streak_v2') || '{"lastDate":"","days":0}');
-    if (streakData.lastDate !== today) {
-        const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-        if (streakData.lastDate === yesterday) {
-            streakData.days++;
-        } else if (streakData.lastDate !== today) {
-            streakData.days = 1;
-        }
-        streakData.lastDate = today;
-        localStorage.setItem('study_streak_v2', JSON.stringify(streakData));
-    }
-    const badge = document.getElementById('study-streak-badge');
-    if (badge) badge.textContent = `🔥 連續學習 ${streakData.days} 天`;
 }
 
 function toggleDarkMode() {
@@ -603,66 +516,18 @@ if (localStorage.getItem('dark_mode_enabled_v2') === 'true') {
     document.body.classList.add('dark-mode');
 }
 
-function renderDashboard() {
-    const totalM = masteredSet.size;
-    updateStudyStreak();
-}
-
-function checkAllMasteredCelebration() {
-    if (masteredSet.size === RAW_QUESTIONS.length) {
-        document.getElementById('modal-all-mastered').classList.remove('hidden');
-    }
-}
-
-function closeMasteredSuccessModal() {
-    document.getElementById('modal-all-mastered').classList.add('hidden');
-    isQuizActive = false;
-    quizList = [];
-    userAnswers = [];
-    currentIndex = 0;
-    
-    document.getElementById('view-quiz').classList.add('hidden');
-    document.getElementById('view-mastered').classList.add('hidden');
-    document.getElementById('view-result').classList.add('hidden');
-    document.getElementById('view-setup').classList.remove('hidden');
-    
-    handleModeChange();
-}
-
-function resetAllData() {
-    if (confirm("確定要重設所有已熟記標記與錯題統計數據嗎？")) {
-        masteredSet.clear();
-        wrongStats = {};
-        cardLastPositions = {};
-        saveAllData();
-        renderDashboard();
-    }
-}
-
 function handleModeChange() {
     const mode = document.getElementById('select-mode').value;
-    const pRandom = document.getElementById('panel-random');
-    const pCustom = document.getElementById('panel-custom');
-
-    pRandom.classList.add('hidden');
-    pCustom.classList.add('hidden');
-
-    if (mode === 'random-all') {
-        pRandom.classList.remove('hidden');
-    } else if (mode === 'custom-range') {
-        pCustom.classList.remove('hidden');
-    }
+    document.getElementById('panel-random').classList.toggle('hidden', mode !== 'random-all');
+    document.getElementById('panel-custom').classList.toggle('hidden', mode !== 'custom-range');
 }
 
 function openFlashcardSetup() {
     document.getElementById('view-setup').classList.add('hidden');
     document.getElementById('view-quiz').classList.add('hidden');
     document.getElementById('view-mastered').classList.add('hidden');
-    document.getElementById('view-result').classList.add('hidden');
     document.getElementById('view-flashcard').classList.remove('hidden');
-    
-    const scope = document.getElementById('select-card-scope').value || 'unmastered';
-    changeCardScope(scope);
+    changeCardScope(document.getElementById('select-card-scope').value || 'unmastered');
 }
 
 function changeCardScope(scope) {
@@ -680,10 +545,7 @@ function changeCardScope(scope) {
     }
 
     cardList = pool.sort((a, b) => a.no - b.no);
-    const savedIdx = cardLastPositions[scope];
-    cardIndex = (typeof savedIdx === 'number' && savedIdx < cardList.length) ? savedIdx : 0;
-    
-    isCardFlipped = false;
+    cardIndex = Math.min(cardLastPositions[scope] || 0, cardList.length - 1);
     renderCardContent();
 }
 
@@ -724,19 +586,11 @@ function renderCardContent() {
 }
 
 function flipCard() {
-    const now = Date.now();
-    if (now < suppressClickUntil) return;
-    suppressClickUntil = now + 250;
-
+    if (Date.now() < suppressClickUntil) return;
+    suppressClickUntil = Date.now() + 250;
     isCardFlipped = !isCardFlipped;
-    const inner = document.getElementById('flashcard-inner');
-    if (isCardFlipped) {
-        inner.classList.add('is-flipped');
-        document.getElementById('srs-box').classList.remove('hidden');
-    } else {
-        inner.classList.remove('is-flipped');
-        document.getElementById('srs-box').classList.add('hidden');
-    }
+    document.getElementById('flashcard-inner').classList.toggle('is-flipped', isCardFlipped);
+    document.getElementById('srs-box').classList.toggle('hidden', !isCardFlipped);
 }
 
 function rateCard(level) {
@@ -754,19 +608,15 @@ function rateCard(level) {
 function animateSlideTo(direction, onComplete) {
     const card = document.getElementById('flashcard-card');
     const destX = (direction === 'left') ? -window.innerWidth * 1.1 : window.innerWidth * 1.1;
-    const rotate = (direction === 'left') ? -15 : 15;
-
     card.style.transition = 'transform 0.25s ease-in, opacity 0.2s ease';
-    card.style.transform = `translate(${destX}px, 15px) rotate(${rotate}deg)`;
+    card.style.transform = `translate(${destX}px, 15px) rotate(${(direction === 'left') ? -15 : 15}deg)`;
     card.style.opacity = '0';
 
     setTimeout(() => {
         onComplete();
-        const startX = (direction === 'left') ? window.innerWidth * 0.8 : -window.innerWidth * 0.8;
         card.style.transition = 'none';
-        card.style.transform = `translate(${startX}px, 0px) rotate(${(direction === 'left') ? 8 : -8}deg)`;
+        card.style.transform = `translate(${(direction === 'left') ? window.innerWidth * 0.8 : -window.innerWidth * 0.8}px, 0px) rotate(0deg)`;
         card.style.opacity = '0';
-
         requestAnimationFrame(() => {
             card.style.transition = 'transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.25), opacity 0.25s ease';
             card.style.transform = 'translate(0px, 0px) rotate(0deg)';
@@ -778,19 +628,13 @@ function animateSlideTo(direction, onComplete) {
 function prevCard() {
     if (cardIndex <= 0) return;
     document.getElementById('srs-box').classList.add('hidden');
-    animateSlideTo('right', () => {
-        cardIndex--;
-        renderCardContent();
-    });
+    animateSlideTo('right', () => { cardIndex--; renderCardContent(); });
 }
 
 function nextCard() {
     if (cardIndex < cardList.length - 1) {
         document.getElementById('srs-box').classList.add('hidden');
-        animateSlideTo('left', () => {
-            cardIndex++;
-            renderCardContent();
-        });
+        animateSlideTo('left', () => { cardIndex++; renderCardContent(); });
     } else {
         alert("🎉 本題庫字卡已全部背誦完畢！");
         exitFlashcards();
@@ -799,9 +643,8 @@ function nextCard() {
 
 function toggleCardMastered(isChecked) {
     if (!cardList[cardIndex]) return;
-    const qNo = cardList[cardIndex].no;
-    if (isChecked) masteredSet.add(qNo);
-    else masteredSet.delete(qNo);
+    if (isChecked) masteredSet.add(cardList[cardIndex].no);
+    else masteredSet.delete(cardList[cardIndex].no);
     saveAllData();
 }
 
@@ -821,11 +664,8 @@ function toggleAutoPlay() {
         btn.innerHTML = '<span>⏹️ 停止</span>';
         btn.classList.add('active');
         autoPlayInterval = setInterval(() => {
-            if (!isCardFlipped) {
-                flipCard();
-            } else {
-                nextCard();
-            }
+            if (!isCardFlipped) flipCard();
+            else nextCard();
         }, 3600);
     }
 }
@@ -834,7 +674,6 @@ function exitFlashcards() {
     if (autoPlayInterval) toggleAutoPlay();
     document.getElementById('view-flashcard').classList.add('hidden');
     document.getElementById('view-setup').classList.remove('hidden');
-    renderDashboard();
     handleModeChange();
 }
 
@@ -845,70 +684,42 @@ function speakText(text) {
         utter.lang = 'zh-TW';
         utter.rate = 1.0;
         window.speechSynthesis.speak(utter);
-    } else {
-        alert("您的瀏覽器不支援語音朗讀功能！");
     }
 }
 
 const cardEl = document.getElementById('flashcard-card');
-let isDragging = false;
-let startX = 0, startY = 0, currentX = 0, currentY = 0;
-let isMovedSignificantly = false;
+let isDragging = false, startX = 0, startY = 0, currentX = 0, currentY = 0, isMoved = false;
 
-function onDragStart(clientX, clientY) {
-    isDragging = true;
-    isMovedSignificantly = false;
-    startX = clientX; startY = clientY;
-    currentX = clientX; currentY = clientY;
+cardEl.addEventListener('touchstart', (e) => {
+    if (e.target.closest('button')) return;
+    isDragging = true; isMoved = false;
+    startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+    currentX = startX; currentY = startY;
     cardEl.style.transition = 'none';
-}
+}, { passive: true });
 
-function onDragMove(clientX, clientY) {
+cardEl.addEventListener('touchmove', (e) => {
     if (!isDragging) return;
-    currentX = clientX; currentY = clientY;
-    const deltaX = currentX - startX;
-    const deltaY = currentY - startY;
+    currentX = e.touches[0].clientX; currentY = e.touches[0].clientY;
+    if (Math.abs(currentX - startX) > 8 || Math.abs(currentY - startY) > 8) isMoved = true;
+    cardEl.style.transform = `translate(${currentX - startX}px, ${(currentY - startY) * 0.25}px) rotate(${(currentX - startX) * 0.05}deg)`;
+}, { passive: true });
 
-    if (Math.abs(deltaX) > 8 || Math.abs(deltaY) > 8) {
-        isMovedSignificantly = true;
-    }
-
-    const rotation = deltaX * 0.05;
-    cardEl.style.transform = `translate(${deltaX}px, ${deltaY * 0.25}px) rotate(${rotation}deg)`;
-    cardEl.style.opacity = Math.max(0.4, 1 - Math.abs(deltaX) / (window.innerWidth * 0.9));
-}
-
-function onDragEnd() {
+cardEl.addEventListener('touchend', () => {
     if (!isDragging) return;
     isDragging = false;
     const deltaX = currentX - startX;
-    const deltaY = currentY - startY;
-
-    if (Math.abs(deltaX) > 75 && Math.abs(deltaX) > Math.abs(deltaY) * 1.1) {
+    if (Math.abs(deltaX) > 75) {
         suppressClickUntil = Date.now() + 350;
         document.getElementById('srs-box').classList.add('hidden');
-        if (deltaX < 0) {
-            if (cardIndex < cardList.length - 1) {
-                animateSlideTo('left', () => { cardIndex++; renderCardContent(); });
-            } else {
-                alert("🎉 本題庫字卡已全部背誦完畢！");
-                exitFlashcards();
-            }
-        } else {
-            if (cardIndex > 0) {
-                animateSlideTo('right', () => { cardIndex--; renderCardContent(); });
-            } else {
-                springBack();
-            }
-        }
+        if (deltaX < 0 && cardIndex < cardList.length - 1) animateSlideTo('left', () => { cardIndex++; renderCardContent(); });
+        else if (deltaX > 0 && cardIndex > 0) animateSlideTo('right', () => { cardIndex--; renderCardContent(); });
+        else springBack();
     } else {
-        if (!isMovedSignificantly) {
-            flipCard();
-        } else {
-            springBack();
-        }
+        if (!isMoved) flipCard();
+        else springBack();
     }
-}
+});
 
 function springBack() {
     cardEl.style.transition = 'transform 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.25), opacity 0.25s ease';
@@ -916,28 +727,7 @@ function springBack() {
     cardEl.style.opacity = '1';
 }
 
-cardEl.addEventListener('touchstart', (e) => {
-    if (e.target.closest('button')) return;
-    onDragStart(e.touches[0].clientX, e.touches[0].clientY);
-}, { passive: true });
-
-cardEl.addEventListener('touchmove', (e) => {
-    if (!isDragging) return;
-    onDragMove(e.touches[0].clientX, e.touches[0].clientY);
-}, { passive: true });
-
-cardEl.addEventListener('touchend', () => { if (isDragging) onDragEnd(); });
-
-cardEl.addEventListener('mousedown', (e) => {
-    if (e.target.closest('button')) return;
-    onDragStart(e.clientX, e.clientY);
-});
-
-window.addEventListener('mousemove', (e) => { if (isDragging) onDragMove(e.clientX, e.clientY); });
-window.addEventListener('mouseup', () => { if (isDragging) onDragEnd(); });
-
 handleModeChange();
-renderDashboard();
 </script>
 </body>
 </html>
