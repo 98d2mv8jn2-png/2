@@ -1132,6 +1132,9 @@ function renderCardContentWithoutReset() {
     cardLastPositions[currentCardScope] = cardIndex;
     localStorage.setItem('card_last_positions_v2', JSON.stringify(cardLastPositions));
 
+    const inner = document.getElementById('flashcard-inner');
+    if (inner) inner.classList.remove('is-flipped');
+
     document.getElementById('srs-box').classList.add('hidden');
     document.getElementById('card-progress').textContent = `📝 題目 (${cardIndex + 1}/${cardList.length}) (#${item.no})`;
 
