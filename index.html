@@ -147,7 +147,7 @@
         .pause-btns { display: flex; gap: 0.5rem; margin-top: 0.25rem; }
 
         .question-box { font-size: 1.15rem; font-weight: 600; margin-bottom: 1.25rem; line-height: 1.6; }
-        .feedback { margin-top: 1.25rem; padding: 1rem; border-radius: 6px; }
+        .feedback { margin-top: 1.25rem; padding: 1rem; border-radius: 6px; font-size: 0.95rem; line-height: 1.6; }
         .feedback.correct { background-color: #dcfce7; border: 1px solid #bbf7d0; color: var(--success); }
         .feedback.wrong { background-color: #fee2e2; border: 1px solid #fecaca; color: var(--danger); }
         .feedback-title { font-weight: bold; font-size: 1.05rem; margin-bottom: 0.5rem; }
@@ -577,7 +577,7 @@ const RAW_QUESTIONS = [
     { no: 83, q: "試述炊具費每人每月限額及範圍？", a: "（1）每人每月由副食費提列20元額度為限。（2）專供廚房、餐廳、購置消耗（零星）性用品及補充清潔用品、引火材料等支用，每月如有結餘時，應轉回副食費運用，不得移作他用。" },
     { no: 84, q: "基層單位主官及預財士辦理移交時，監交人分別為何？", a: "（1）各基層單位主官，其監交人員為上級單位主官及主計單位主管（或其代表）。（2）各基層單位預財士，其監交人員為單位主官及主計單位主管（或其代表）。" },
     { no: 85, q: "簡述內部審核之區分為何？", a: "（1）事前審核：謂事項入帳前之審核，著重收支之控制。（2）事後複核：謂事項入帳後之審核，著重憑證、帳表之複核與工作績效之查核。" },
-    { no: 86, q: "依會計法第9條，政府會計之組織為那五種？", a: "總會計、單位會計、分會計、附屬單位會計、附屬單位會計之分會計。" },
+    { no: 86, q: "依會計法第9#%%九條，政府會計之組織為那五種？", a: "總會計、單位會計、分會計、附屬單位會計、附屬單位會計之分會計。" },
     { no: 87, q: "施政計畫之特性為何？", a: "前瞻性、整體性、持續性。" },
     { no: 88, q: "所屬各級單位主官及副主官行政費，上校及中校主官、副主官每月列支額度為何？", a: "（1）上校：6,600元。（2）中校：5,100元。" },
     { no: 89, q: "依各級單位對經管財務行政事項人員實施內部控制之自我檢查作業要點，其範圍為何？", a: "（1）預算執行。（2）會計處理。（3）現金收支。（4）財產保管。（5）採購及處分財物。（6）領回轉發案件（含營外欠款情形）。（7）補助費跨機關通報案件。（8）主計部門財務輔檢督導情形。（9）臨時交辦及其他重要事項。" },
@@ -994,7 +994,7 @@ function togglePeekAnswer() {
 function normalizeStr(str) {
     return (str || '')
         .replace(/[\uff01-\uff5e]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xfee0))
-        .replace(/[\s\(\)\[\]（）〔〕【】、，。；：\.,:;""''「」『』\-_—~～]/g, '')
+        .replace(/[\s\(\)\[\]（）〔〕【】、.,:;""''「」『』\-_—~～]/g, '')
         .toLowerCase();
 }
 
@@ -1006,24 +1006,18 @@ function submitAnswer() {
     if (peekDisplay) peekDisplay.classList.add('hidden');
 
     let isCorrect = false;
-    let diffHtml = '';
 
     if (activeMatchRule === 'exact') {
         const uNorm = normalizeStr(userVal);
         const sNorm = normalizeStr(stdVal);
         isCorrect = (uNorm === sNorm);
     } else {
-        // 💡 寬鬆模式最終版：
-        // 1. 去除標點、空白後，總字數必須完全一致。
-        // 2. 若標準答案含有子題（如（1）、（2）...），則可不按順序填寫，只要各子題字元數與內容全對即可。
-        // 3. 若為一般整段文字（無子題），則必須字字對應且順序完全正確。
         const uNorm = normalizeStr(userVal);
         const sNorm = normalizeStr(stdVal);
 
         if (uNorm.length === sNorm.length) {
             const stdPoints = stdVal.split(/(?=[（(][0-9一二三四五六七八九十]+[）)])/g).filter(p => p.trim().length > 0);
             if (stdPoints.length > 1) {
-                // 有子題：檢查每一塊子題正規化後是否有在使用者答案中出現（不拘順序，且總字數已確認一致）
                 let allMatched = true;
                 stdPoints.forEach(pt => {
                     const ptNorm = normalizeStr(pt);
@@ -1031,7 +1025,6 @@ function submitAnswer() {
                 });
                 isCorrect = allMatched;
             } else {
-                // 純文字段落：字數相同、標點忽略下，直接比對內容順序
                 isCorrect = (uNorm === sNorm);
             }
         } else {
@@ -1044,10 +1037,13 @@ function submitAnswer() {
         saveAllData();
     }
 
-    diffHtml = `
-        <div class="feedback-title">${isCorrect ? '✅ 答對了！' : '❌ 答案未完全相符'}</div>
-        <div style="margin-top:0.5rem; font-size:0.95rem;"><strong>💡 標準答案：</strong><br>${stdVal}</div>
-    `;
+    const diffHtml = isCorrect 
+        ? `<div class="feedback-title">✅ 答對了！</div>`
+        : `
+            <div class="feedback-title">❌ 答案未完全相符</div>
+            <div style="margin-top:0.4rem;"><strong>您的作答：</strong><br><span style="color:#b91c1c; word-break:break-all;">${userVal || '(未作答)'}</span></div>
+            <div style="margin-top:0.6rem;"><strong>標準答案：</strong><br><span style="color:#15803d; word-break:break-all;">${stdVal}</span></div>
+        `;
 
     userAnswers[currentIndex] = {
         userAnswer: userVal,
